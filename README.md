@@ -1,2 +1,3 @@
-# plutofire
+# PLUTOfire
+
 PLUTO firwmare repository
