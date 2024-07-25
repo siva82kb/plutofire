@@ -1,5 +1,4 @@
 
-
 /* variables.h
  *  Header file that contains all the variable declarations for the 
  *  PLUTO CONTROL program.
@@ -91,13 +90,12 @@ byte isActuated;
 #define MCURROFFSET         -maxCurrent
 
 #define mechnicalConstant   0.231 //for 48v 0.231; // for 24V 0.077;
-#define maxCurrent       5
-
+#define maxCurrent       8
 
 
 // ofset angle
 int encOffsetCount = 0;
-int enPPRActuated = 6400;   //6400 for new motor 4096 for old motor
+int enPPRActuated = 4096;   //6400 for new motor 4096 for old motor
 int enPPRnonActuated = 4096 ;
 
 // Sensor data buffers
@@ -110,12 +108,12 @@ float previous_torque = 0;
 float offset_torque = 0;
 Buffer control;
 
+float loadCell1 = 12.3;
+float loadCell2 =21.3;
+float loadCell3 = 32.1;
+
 volatile byte inputButton = 1;
 bool ledState = 1;
-
-
-float desPos;
-float maxTorq;
 
 float prev_time = 0, prev_torque = 0;
 float torq_df = 0;
@@ -124,7 +122,7 @@ float torq_df = 0;
 float arom[] = {999,999};
 float prom[] = {999,999};
 float asssitProfile[10] = {0};
-float maxTorquePID = 3;
+
 
 //Mehanism
 byte currentMechanism = -99;
@@ -171,9 +169,9 @@ float desTorq = 0.0;
 
 // resistance control
 
-//float kp = 0.05;
-//float kd = 0.05;
-//float km = 0.001;
+float kp = -1;
+float kd = -1;
+float km = -1;
 float tor;
 float neutral_ang;
 

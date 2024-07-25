@@ -5,14 +5,12 @@
  */
 
 void writeSensorStream() {
-  bt.flush();
-//      if(bounce.read() == 0){
+      if(bounce.read() == 0){
 //led.setColor(RGBLed::RED);
-//}
-//else{
-//    led.setColor(RGBLed::GREEN);
-//
-//}
+}
+else{
+    led.setColor(RGBLed::GREEN);
+}
   // Format:
   // 255 | 255 | No. of bytes | Status | Error Val 1 | Error Val 2 | isActuated | Payload | Chksum
   byte header[] = {0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,0x00};
@@ -22,7 +20,9 @@ void writeSensorStream() {
   // Update Out data Buffer
   outPayload.newPacket();
   outPayload.add(ang.val(0, false));
+//  outPayload.add(angvel.valf(0, false));
   outPayload.add(transformed_torque);
+//  outPayload.add(mcurr.valf(0, false));
   outPayload.add(control.valf(0, false));
   
 
@@ -33,7 +33,7 @@ void writeSensorStream() {
   } else if (ctrlType == TORQUE) {
     outPayload.add(desTorq);
   } else {
-    outPayload.add(Setpoint);
+    outPayload.add(0.0);
   }
 
 ////load cell values
@@ -75,8 +75,7 @@ outPayload.add(inputButton);
     chksum += _temp;
   }
   bt.write(chksum);
-  
-bt.flush();
+  bt.flush();
   
 
 }
@@ -140,7 +139,7 @@ void readHandleIncomingMessage() {
         calib = NOCALIB;
 
         currentMechanism = serReader.payload[1];
-        //startCalibMode();
+        startCalibMode();
         break;
       
     }    

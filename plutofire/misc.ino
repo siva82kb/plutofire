@@ -8,14 +8,21 @@ void _assignFloatUnionBytes(int inx, byte* bytes, floatunion_t* temp) {
 }
 
  
-float encAngle() {
-    long newPosition = myEnc.read() - encOffsetCount;
-    // Assuming enPPRActuated and enPPRnonActuated are constants or change infrequently,
-    // consider moving the divisor calculation outside if their values are updated rarely.
-    float divisor = isActuated ? (enPPRActuated * 4.0) : enPPRnonActuated;
-    return 360.0 * newPosition / divisor;
-}
+float encAngle(){
 
+   long newPosition = myEnc.read()-encOffsetCount;
+  if (newPosition != oldPosition) {
+    oldPosition = newPosition;
+    
+  }
+
+    if(isActuated){
+      
+      return (360.0 * newPosition / (enPPRActuated*4));
+    }
+      else
+         return((360.0 * newPosition / (enPPRnonActuated)));
+}
 
 
 
@@ -26,8 +33,8 @@ void updateIO(){
     int deboucedInput = bounce.read();
     
     if ( deboucedInput == LOW ) {
-//      led.setColor(RGBLed::RED);
-      inputButton =  1;
+      led.setColor(RGBLed::RED);
+      inputButton =  1   ;
      // delay(1);
       ledState = !ledState; // SET ledState TO THE OPPOSITE OF ledState
       digitalWrite(LED_PIN,ledState); // WRITE THE NEW ledState
@@ -38,8 +45,9 @@ void updateIO(){
 void updateSensorData() {
   
   ang.add(encAngle());
- angvel.add(analogRead(MOTORSPEED));
- mcurr.add(analogRead(MOTORCURR));
+//  angvel.add(analogRead(MOTORSPEED));
+//  mcurr.add(analogRead(MOTORCURR));
+//  loadcellUpdate();
   updateIO();
 
   transformed_torque = (analogRead(MOTORCURR)*MCURRGAIN - maxCurrent)* mechnicalConstant;
@@ -82,45 +90,20 @@ void updateResistanceControlInfo(int sz, int strtInx, byte* payload) {
   floatunion_t temp;
   // Torque sensor.
   _assignFloatUnionBytes(inx, payload, &temp);
-  Kp = temp.num;
+  kp = temp.num;
   inx += 4;
   _assignFloatUnionBytes(inx, payload, &temp);
-  Kd = temp.num;
+  kd = temp.num;
   inx += 4;
    _assignFloatUnionBytes(inx, payload, &temp);
-  Ki = temp.num;
+  km = temp.num;
   inx += 4;
   _assignFloatUnionBytes(inx, payload, &temp);
-  maxTorq = temp.num;
-  myPID.SetMode(AUTOMATIC);
-  myPID.SetTunings(Kp, Ki, Kd); 
-
-//  Serial.print("recived control info");
-//    Serial.print(Kp);
-
-
-  }
-
-// Update sensor parameter using  byte array
-void PIDinput(int sz, int strtInx, byte* payload) {
-  int inx = strtInx;
-  floatunion_t temp;
-  // Torque sensor.
-  _assignFloatUnionBytes(inx, payload, &temp);
- 
-  Setpoint = temp.num;
+  neutral_ang = temp.num;
   inx += 4;
-  _assignFloatUnionBytes(inx, payload, &temp);
-  if( maxTorq != temp.num){
-      maxTorq = temp.num;
-      myPID.SetOutputLimits(-5*maxTorq,5*maxTorq);
-
-  }
   
-//  Serial.println("recived target info");
-// Serial.println(maxTorq);
+}
 
-  }
 
 // Update sensor param in the different buffers
 void updateBufferSensorParam(bool reset) {
@@ -164,7 +147,8 @@ void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
       break;
     case POSITION:
       // Position control gain
-      PIDinput(inx, payload, payload);
+      _assignFloatUnionBytes(inx, payload, &temp);
+      pcKp = temp.num;
       break;
     case TORQUE:
       // Torque control gain
@@ -173,7 +157,6 @@ void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
       break;
       case RESIST:
        updateResistanceControlInfo(sz,inx,payload);
-       break;
   }
 }
 
@@ -194,16 +177,26 @@ void setTargetParameters(byte ctype, int sz, int strtInx, byte* payload) {
       break;
 
     case RESIST:
-      PIDinput(sz,inx,payload);
+      
     break;
   }
 }
 
 
-
+void initSensorParam() {
+  torqParam.m = 1.0;
+  torqParam.c = 0.0;
+  angvelParam.m = 1.0;
+  angvelParam.c = 0.0;
+  mcurrParam.m = MCURRGAIN;
+  mcurrParam.c = MCURROFFSET;
+  setTorqSensorParam();
+  setAngleVelSensorParam();
+  setMCurrSensorParam();
+}
 
 // Check for any errors in the operation
-void If checkForErrors() {
+void checkForErrors() {
   error = NOERR;
   uint16_t _errval = 0;
   
@@ -236,7 +229,31 @@ void If checkForErrors() {
   errorval[1] = (_errval >> 8) & 0x00FF;
 }
 
+void startCalibMode() {
+  ctrlType = CALIBRATION;
+  calibCount = 0;
+  angvelParam.m = 1.0;
+  angvelParam.c = 0.0;
+  mcurrParam.m = 1.0;
+  mcurrParam.c = 0.0;
+  setAngleVelSensorParam();
+  setMCurrSensorParam();
+}
 
+void updateExitCalibMode() {
+  // Reset encoder count
+
+  // Update gains for vel. and curr sensors
+  angvelParam.m = ANGVELGAIN;
+  angvelParam.c = 0;
+  mcurrParam.m = MCURRGAIN;
+  mcurrParam.c = MCURROFFSET;
+  setAngleVelSensorParam();
+  setMCurrSensorParam();
+
+  // Exit calibration mode.
+  ctrlType = NONE;
+}
 
 
 
@@ -244,8 +261,18 @@ void calibProcess() {
   // Check counter
   ctrlType = NONE;
   encOffsetCount =    myEnc.read();
-
- 
+  initSensorParam();
+  //offset_torque = offset_torque + transformed_torque;
+  //initLoadCell();
+  if (calibCount++ == maxCalibCount) {
+    // Calibration count done. 
+    // Update parameters and exit  calibration mode.
+    updateExitCalibMode();
+    // Update calibration.
+    calib = YESCALIB;
+  } else {
+    writeSensorStream();
+  }
 }
 
 //void handleError() {
@@ -269,4 +296,4 @@ void calibProcess() {
 //      digitalWrite(CW, LOW);
 //      analogWrite(PWM, 10);
 //  }
-//}z
+//}

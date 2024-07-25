@@ -63,11 +63,11 @@ int SerialReader::readUpdate() {
         break;
       
 
-    bt1.flush();
+    
       case WAITFORHANDLING:
         break;
 
-         
+       
     }
     // Return payload size only if the current state is WAITFORHANDLING
     if (_state == WAITFORHANDLING) {

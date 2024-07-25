@@ -1,78 +1,112 @@
+/* Functions to implement the different controllers for the 
+ *  PLUTO robot.
+ *  
+ *  Author: Sivakumar Balasubramanian.
+ *  Date: 31 Aug 2018
+ */
 
-static float last_pwm = 0; // Stores the last PWM value for smoothing transitions
-const float smoothingFactor = 0.0261; // Adjust this to control the rate of smoothing
-
-// Function Prototypes
-float sendPWMToMotor(float pwm);
-float limitPWM(float p);
-
-void updateControlLaw() {
-    float _ang = ang.val(0, false);
-
-    switch (ctrlType) {
-        case ACTIVE:
-            target_pwm = abs(transformed_torque) < torqTh ? 0 : -acKp * 10 * transformed_torque;
-            break;
-        case POSITION:
-            if (desAng != 999) {
-                float angDiff = desAng - _ang;
-                target_pwm = abs(angDiff) < 1 ? 0.0 : (abs(angDiff) > 2 ? pcKp * (angDiff / abs(angDiff)) + 0.14 : 0.0);
-            }
-            break;
-        case TORQUE:
-            if (desTorq == 0) {
-                target_pwm = 20;
-            } else {
-                float current = desTorq / mechnicalConstant;
-                target_pwm = constrain(map(abs(current), 0, maxCurrent, 0.1 * 255, 0.9 * 255), -229, 229);
-                target_pwm *= (desTorq < 0) ? -1 : 1;
-            }
-            break;
-        case RESIST: // only this is being used for now.
-            Input = ang.val(0, false);
-
-                if(Setpoint != 999){
-                   if(abs(Setpoint-Input) <3){ // to prevent oscillations when you are very close to the target. this method id called adaptive control
-                      myPID.SetTunings(.0008, .003, Kd); 
-                   }
-                   else{
-                      myPID.SetTunings(Kp, Ki, Kd); 
-                   }
-                myPID.Compute();
-                target_pwm = constrain((map(abs(Output), 0, 5, 0.1 * 255, 0.9 * 255)), 0.10 * 255, 0.9*255);
-                target_pwm *= (Output < 0) ? -1 : 1;
-                }
-                else{
-                  target_pwm = 20;
-                } 
-            
-            break;
-        case NONE:
-            target_pwm = 20;
-
-            break;
-    }
-
-    // Smooth and limit the PWM value before sending it to the motor
-    last_pwm += smoothingFactor * (target_pwm - last_pwm); // to remove the sudden jerks when the delta is high
-
-    sendPWMToMotor(limitPWM(last_pwm));
-
-    control.add(target_pwm);
-}
-
-float sendPWMToMotor(float target_pwm) {
-
-
-    digitalWrite(ENABLE, target_pwm != 0 ? HIGH : LOW);
-    digitalWrite(CW, target_pwm < 0 ? HIGH : LOW);
-    analogWrite(PWM, abs(target_pwm)); // Use abs() to ensure PWM signal is always positive
-   // return target_pwm; 
-}
-
-float limitPWM(float p) {
+ void updateControlLaw() {
+ 
+ 
+  float _ang = ang.val(0, false);
+  float _pwm = 0.0;
   
-    // Ensure PWM stays within the specified range
-    float limited_pwm = constrain(abs(p), 0.10 * 255, 0.9 * 255);
-    return p < 0 ? -limited_pwm : limited_pwm; // Retain direction of the PWM
+  switch(ctrlType) {
+    float cur;
+    float current;
+    case ACTIVE:
+      // Admittance control.
+      if (abs(transformed_torque) < torqTh) {
+        _pwm = 0;
+      } else {
+        _pwm = -acKp *10* transformed_torque;
+      }
+      break;
+    case POSITION:
+      // Position control.
+      // Check if position control is disabled.
+      if (desAng == 999) {
+        _pwm = 0.0;
+      } 
+      else {
+       
+        if(abs((desAng - _ang))<1)
+        _pwm =0.0;  
+        else if(abs((desAng - _ang))>2)
+        _pwm =  (pcKp)* ((desAng - _ang)/abs((desAng - _ang))) +0.14;
+           
+      }
+      break;
+      case TORQUE:
+        if(desTorq == 0){
+          _pwm = 20; 
+        }
+        else{
+          current = desTorq/mechnicalConstant;
+           _pwm =  constrain(map(abs(current),0,maxCurrent,0.1*255,0.9*255),-229,229);
+//          
+        }
+     
+
+      break;
+
+     case RESIST:
+      // PD resistance control
+        
+        desTorq =  -(kp*(_ang - neutral_ang) + kd*0.02*_ang - kd*0.02*prev_ang);
+        cur = desTorq/mechnicalConstant;
+        _pwm =  constrain(map(abs(cur),0,maxCurrent,0.1*255,0.9*255),-229,229);
+        prev_ang = _ang;     
+
+        break;
+      
+      
+      
+    case NONE:
+      // Switch off controller.
+      digitalWrite(ENABLE, LOW);
+      control.add(0.0);
+      return;
+
+     
+  }
+
+  // Send PWM value to motor controller & 
+  // update control.
+  _pwm = sendPWMToMotor(_pwm);
+  control.add(_pwm);
+ }
+ 
+ 
+
+
+ float sendPWMToMotor(float pwm) {
+  if (desTorq > 0) {
+    // Move counter clockwise
+    digitalWrite(ENABLE, HIGH);
+    digitalWrite(CW, LOW);
+    //pwm = limitPWM(pwm);
+    analogWrite(PWM, max(pwm,15));
+    return pwm;
+  } else {
+    // Move counter clockwise
+    digitalWrite(ENABLE, HIGH);
+    digitalWrite(CW, HIGH);
+    //pwm = limitPWM(pwm);
+    analogWrite(PWM,max(abs(pwm),15));
+    //delayMicroseconds(10);
+    return pwm;
+  }
+ }
+
+
+ byte limitPWM(float p) {
+   if (p < 0) {
+    p = -p;
+  }
+  if(p !=0)
+  p = max(0.1, min(0.9, p));
+  else
+    p= 0.1;
+  return (byte) (p * 255);
 }

@@ -61,5 +61,20 @@ class OutDataBuffer4Float {
     byte _sz;
 };
 
+//
+//// Pressure controller Class
+//class PressureController {
+//  public:
+//    PressureController(float);
+//    void setControllerParam(float, float, float, float, float);
+//    float getControl(float, float);
+//    float errorIntegral(void);
+//  private:
+//    Buffer _err;
+//    float dT;
+//    float _u;
+//    float _kp, _kd, _ki;
+//    float _ulims[2];
+//};
 
 #endif
