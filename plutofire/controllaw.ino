@@ -16,10 +16,10 @@
     float current;
     case ACTIVE:
       // Admittance control.
-      if (abs(transformed_torque) < torqTh) {
+      if (abs(torque_est) < torqTh) {
         _pwm = 0;
       } else {
-        _pwm = -acKp *10* transformed_torque;
+        _pwm = -acKp *10* torque_est;
       }
       break;
     case POSITION:

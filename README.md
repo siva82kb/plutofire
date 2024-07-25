@@ -3,6 +3,7 @@
 PLUTO firwmare repository
 
 ## To Do List
-- Clean up firmwware code
+- Clean up firmwware code.
 - Add documentation to functions.
-- Firmware version support
+- Firmware version support.
+- Unique device ID support.

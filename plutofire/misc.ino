@@ -7,53 +7,52 @@ void _assignFloatUnionBytes(int inx, byte* bytes, floatunion_t* temp) {
   temp->bytes[3] = bytes[inx + 3];
 }
 
- 
-float encAngle(){
 
-   long newPosition = myEnc.read()-encOffsetCount;
-  if (newPosition != oldPosition) {
-    oldPosition = newPosition;
-    
-  }
+float readEncoderAngle() {
+    long newPosition = plutoEncoder.read() - encOffsetCount;
+    // if (newPosition != oldPosition) {
+    //     oldPosition = newPosition;
+    // }
 
-    if(isActuated){
-      
-      return (360.0 * newPosition / (enPPRActuated*4));
+    if (isActuated) {
+        return (360.0 * newPosition / (enPPRActuated * 4));
     }
-      else
-         return((360.0 * newPosition / (enPPRnonActuated)));
+    
+    return ((360.0 * newPosition / (enPPRnonActuated)));
 }
 
 
-
-void updateIO(){
-    bounce.update();
-  inputButton = bounce.read();
-  if ( bounce.changed() ) {
+/*
+ * Read the status of the PLUTO button.
+ */
+void readPlutoButtonState(void) {
+  bounce.update();
+  plutoButton = bounce.read();
+  if (bounce.changed()) {
     int deboucedInput = bounce.read();
-    
-    if ( deboucedInput == LOW ) {
+    if (deboucedInput == LOW) {
       led.setColor(RGBLed::RED);
-      inputButton =  1   ;
-     // delay(1);
-      ledState = !ledState; // SET ledState TO THE OPPOSITE OF ledState
-      digitalWrite(LED_PIN,ledState); // WRITE THE NEW ledState
-      
+      plutoButton = 1;
+      ledState = !ledState;             // SET ledState TO THE OPPOSITE OF ledState
+      digitalWrite(LED_PIN, ledState);  // WRITE THE NEW ledState
     }
   }
 }
-void updateSensorData() {
-  
-  ang.add(encAngle());
-//  angvel.add(analogRead(MOTORSPEED));
-//  mcurr.add(analogRead(MOTORCURR));
-//  loadcellUpdate();
-  updateIO();
 
-  transformed_torque = (analogRead(MOTORCURR)*MCURRGAIN - maxCurrent)* mechnicalConstant;
- 
+/*
+ * Function to read the different sensors of the device and update the 
+ * corresponding variables.
+ */
+void updateSensorData(void) {
+  // Read the motor encoder
+  ang.add(readEncoderAngle());
+
+  // Estimated torque from the motor current
+  torque_est = (analogRead(MOTORCURR) * MCURRGAIN - maxCurrent) * mechnicalConstant;
+
+  // Read the PLUTO button state
+  readPlutoButtonState();
 }
-
 
 void _displaySerialUSB() {
   // put your main code here, to run repeatedly:
@@ -70,6 +69,11 @@ void _displaySerialUSB() {
 byte getProgramStatus(byte dtype) {
   // X | DATA TYPE | DATA TYPE | DATA TYPE | CONTROL TYPE | CONTROL TYPE | CONTROL TYPE | CALIB
   return ((dtype << 4) | (ctrlType << 1) | (calib & 0x01));
+}
+
+byte getMechActType(void) {
+    // CURR MECH | CURR MECH | CURR MECH | CURR MECH | X | X | X | IS ACTUATED
+    return ((currMech << 4) | isActuated);
 }
 
 // Update sensor parameter using  byte array
@@ -95,13 +99,12 @@ void updateResistanceControlInfo(int sz, int strtInx, byte* payload) {
   _assignFloatUnionBytes(inx, payload, &temp);
   kd = temp.num;
   inx += 4;
-   _assignFloatUnionBytes(inx, payload, &temp);
+  _assignFloatUnionBytes(inx, payload, &temp);
   km = temp.num;
   inx += 4;
   _assignFloatUnionBytes(inx, payload, &temp);
   neutral_ang = temp.num;
   inx += 4;
-  
 }
 
 
@@ -115,25 +118,22 @@ void updateBufferSensorParam(bool reset) {
 }
 
 // Update sensor parameters for torque sensor
-void setTorqSensorParam()
-{
-    torque.setconvfac(torqParam.m, torqParam.c);
+void setTorqSensorParam() {
+  torque.setconvfac(torqParam.m, torqParam.c);
 }
 
 // Update sensor parameters for angular velocity sensor
-void setAngleVelSensorParam()
-{
-    angvel.setconvfac(angvelParam.m, angvelParam.c);
+void setAngleVelSensorParam() {
+  angvel.setconvfac(angvelParam.m, angvelParam.c);
 }
 
 // Update sensor parameters for motor current sensor
-void setMCurrSensorParam()
-{
-    mcurr.setconvfac(mcurrParam.m, mcurrParam.c);
+void setMCurrSensorParam() {
+  mcurr.setconvfac(mcurrParam.m, mcurrParam.c);
 }
 
 
-  
+
 
 // Update the controller parameters
 void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
@@ -155,8 +155,8 @@ void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
       _assignFloatUnionBytes(inx, payload, &temp);
       tcKp = temp.num;
       break;
-      case RESIST:
-       updateResistanceControlInfo(sz,inx,payload);
+    case RESIST:
+      updateResistanceControlInfo(sz, inx, payload);
   }
 }
 
@@ -177,8 +177,8 @@ void setTargetParameters(byte ctype, int sz, int strtInx, byte* payload) {
       break;
 
     case RESIST:
-      
-    break;
+
+      break;
   }
 }
 
@@ -199,25 +199,25 @@ void initSensorParam() {
 void checkForErrors() {
   error = NOERR;
   uint16_t _errval = 0;
-  
+
   // Check sensor values.
 
- 
+
   if (abs(ang.valf(0, false)) > 120.0) {
     _errval = _errval | ANGSENSERR;
   }
-//  if (abs(angvel.valf(0, false)) > 500.) {
-//    _errval = _errval | VELSENSERR;
-//  }
-//  if (abs(torque.valf(0, false)) > 4.0) {
-//    _errval = _errval | TORQSENSERR;
-//  }
-//  if (abs(mcurr.valf(0, false)) > 10) {
-//    _errval = _errval | MCURRSENSERR;
-//  
+  //  if (abs(angvel.valf(0, false)) > 500.) {
+  //    _errval = _errval | VELSENSERR;
+  //  }
+  //  if (abs(torque.valf(0, false)) > 4.0) {
+  //    _errval = _errval | TORQSENSERR;
+  //  }
+  //  if (abs(mcurr.valf(0, false)) > 10) {
+  //    _errval = _errval | MCURRSENSERR;
+  //
 
 
-  
+
   // Update error status
   if (_errval != 0) {
     sendPWMToMotor(0);
@@ -229,16 +229,16 @@ void checkForErrors() {
   errorval[1] = (_errval >> 8) & 0x00FF;
 }
 
-void startCalibMode() {
-  ctrlType = CALIBRATION;
-  calibCount = 0;
-  angvelParam.m = 1.0;
-  angvelParam.c = 0.0;
-  mcurrParam.m = 1.0;
-  mcurrParam.c = 0.0;
-  setAngleVelSensorParam();
-  setMCurrSensorParam();
-}
+// void startCalibMode() {
+//     ctrlType = CALIBRATION;
+//     calibCount = 0;
+//     angvelParam.m = 1.0;
+//     angvelParam.c = 0.0;
+//     mcurrParam.m = 1.0;
+//     mcurrParam.c = 0.0;
+//     setAngleVelSensorParam();
+//     setMCurrSensorParam();
+// }
 
 void updateExitCalibMode() {
   // Reset encoder count
@@ -258,27 +258,26 @@ void updateExitCalibMode() {
 
 
 void calibProcess() {
-  // Check counter
-  ctrlType = NONE;
-  encOffsetCount =    myEnc.read();
-  initSensorParam();
-  //offset_torque = offset_torque + transformed_torque;
-  //initLoadCell();
-  if (calibCount++ == maxCalibCount) {
-    // Calibration count done. 
-    // Update parameters and exit  calibration mode.
-    updateExitCalibMode();
-    // Update calibration.
-    calib = YESCALIB;
-  } else {
-    writeSensorStream();
-  }
+    // Check counter
+    ctrlType = NONE;
+    // Set the encoder offset count value.
+    encOffsetCount = plutoEncoder.read();
+    initSensorParam();
+    if (calibCount++ == maxCalibCount) {
+        // Calibration count done.
+        // Update parameters and exit calibration mode.
+        updateExitCalibMode();
+        // Update calibration.
+        calib = YESCALIB;
+    } else {
+        writeSensorStream();
+    }
 }
 
 //void handleError() {
 //  // First clear any control mode.
 //  ctrlType = NONE;
-//  
+//
 //  if (stream) {
 //    writeSensorStream();
 //  }

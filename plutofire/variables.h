@@ -24,11 +24,11 @@
 #define SPEED               0x07
 
 //Mechanisms
-#define NONE  0x00
-#define WFE   0x02
-#define WUD   0x04
-#define WPS   0x06
-#define HOC   0x08
+#define WFE                 0x00
+#define WUD                 0x01
+#define WPS                 0x02
+#define HOC                 0x03
+#define NOMECH              0x04
 
 // Out data type
 #define SENSORSTREAM        0x05
@@ -46,6 +46,8 @@
 #define SET_CONTROL_PARAM   0x05
 #define GET_CONTROL_PARAM   0x06
 #define CALIBRATE           0x07
+#define SET_MECHANISM       0x08
+#define GET_VERSION         0x09
 
 // Error types
 #define ANGSENSERR          0x0001
@@ -64,7 +66,7 @@
 #define IO_SWITCH       17
 #define LED_PIN LED_BUILTIN
 
-#define ACTUATED     21
+#define ACTUATED            21
 byte isActuated;
 
 // torque sensor pind
@@ -94,6 +96,7 @@ byte isActuated;
 #define maxCurrent       8
 
 #define VERSION             "24.07"
+#define DEVID               "PLUTO240725"
 
 // ofset angle
 int encOffsetCount = 0;
@@ -105,16 +108,17 @@ Buffer ang;
 Buffer angvel;
 Buffer mcurr;
 Buffer torque;
-float transformed_torque = 0;
+float torque_est = 0;
 float previous_torque = 0;
 float offset_torque = 0;
 Buffer control;
 
 float loadCell1 = 12.3;
-float loadCell2 =21.3;
+float loadCell2 = 21.3;
 float loadCell3 = 32.1;
 
-volatile byte inputButton = 1;
+// Variable to hold the current PLUTO button state.
+volatile byte plutoButton = 1;
 bool ledState = 1;
 
 float prev_time = 0, prev_torque = 0;
@@ -126,8 +130,8 @@ float prom[] = {999,999};
 float asssitProfile[10] = {0};
 
 
-//Mehanism
-byte currentMechanism = -99;
+// Mehanism
+byte currMech = NOMECH;
 
 // Sensor parameters
 struct SensorParam {
@@ -135,7 +139,6 @@ struct SensorParam {
   float c;
 };
 SensorParam torqParam, angvelParam, mcurrParam;
-
 
 // Program status
 byte streamType = SENSORSTREAM;
@@ -145,19 +148,18 @@ byte calib = NOCALIB;
 byte error = NOERR;
 byte errorval[] = {0x00, 0x00};
 
-
-
 // Serial Reader object
 SerialReader serReader;
+
 // Out data buffer
 OutDataBuffer4Float outPayload;
 
 // Control variables
 float dT = 0.01;
+
 // Admittance Control
 float acKp = 0.1;
 float torqTh = 0.05;
-
 float prev_ang;
 
 // Poition Control
@@ -169,16 +171,12 @@ float tcKp = 0.0;
 float tcKd = 0.2;
 float desTorq = 0.0;
 
-// resistance control
-
+// Resistance control
 float kp = -1;
 float kd = -1;
 float km = -1;
 float tor;
 float neutral_ang;
-
-
-
 
 //float pwmval;
 
@@ -187,6 +185,7 @@ float prevError;
 unsigned long prevLoopTime;
 float errorSum;
 int count;
+
 // Variables for calibration
 byte maxCalibCount = 16;
 byte calibCount = 0;
@@ -199,7 +198,7 @@ IntervalTimer readStream;
 
 SoftwareSerial bt(0, 1);
 RGBLed led(19, 18, 20, RGBLed::COMMON_CATHODE);
-Encoder myEnc(PIN_A, PIN_B);
+Encoder plutoEncoder(PIN_A, PIN_B);
 
 long oldPosition = -999;
 elapsedMillis sincePrint;
