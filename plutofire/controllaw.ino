@@ -77,9 +77,6 @@
   control.add(_pwm);
  }
  
- 
-
-
  float sendPWMToMotor(float pwm) {
   if (desTorq > 0) {
     // Move counter clockwise

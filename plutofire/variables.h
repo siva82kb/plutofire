@@ -5,9 +5,13 @@
  *  
  *  Sivakumar Balasubramanian.
  */
+#include <Bounce2.h>
+#include <Encoder.h>
 
+#include "RGBLed.h"
 #include "CustomDS.h"
 #include "SerialReader.h"
+#include "SoftwareSerial.h"
 
 // Control type
 #define NONE                0x00
@@ -26,14 +30,12 @@
 #define WPS   0x06
 #define HOC   0x08
 
-
 // Out data type
 #define SENSORSTREAM        0x05
 #define SENSORPARAM         0x01
 #define DEVICEERROR         0x02
 #define CONTROLPARAM        0x03
 #define DIAGNOSTICS         0x04
-
 
 // In data type
 #define SET_ERROR           0x00
@@ -44,7 +46,6 @@
 #define SET_CONTROL_PARAM   0x05
 #define GET_CONTROL_PARAM   0x06
 #define CALIBRATE           0x07
-
 
 // Error types
 #define ANGSENSERR          0x0001
@@ -92,6 +93,7 @@ byte isActuated;
 #define mechnicalConstant   0.231 //for 48v 0.231; // for 24V 0.077;
 #define maxCurrent       8
 
+#define VERSION             "24.07"
 
 // ofset angle
 int encOffsetCount = 0;
@@ -188,3 +190,17 @@ int count;
 // Variables for calibration
 byte maxCalibCount = 16;
 byte calibCount = 0;
+
+/* Tempoary section : To be formated later */
+Bounce bounce = Bounce();
+
+//Timer interrupt for reading serial data
+IntervalTimer readStream;
+
+SoftwareSerial bt(0, 1);
+RGBLed led(19, 18, 20, RGBLed::COMMON_CATHODE);
+Encoder myEnc(PIN_A, PIN_B);
+
+long oldPosition = -999;
+elapsedMillis sincePrint;
+bool dir;
