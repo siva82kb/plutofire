@@ -128,18 +128,12 @@ void readHandleIncomingMessage() {
         case CALIBRATE:
             // Check the calibration value
             calib = NOCALIB;
-            currMech = serReader.payload[1];
-            ctrlType = CALIBRATION;
-            // startCalibMode();
-            break;
-        case SET_MECHANISM:
-            // Set the current mechanism as long as it is a valid one.
-            _details = serReader.payload[1];
             currMech = (_details < NOMECH) ? _details : NOMECH;
+            // Set the encoder offset value
+            encOffsetCount = plutoEncoder.read();
             break;
         }
         serReader.payloadHandled();
-    //    bt.clear();
     }
 }
 

@@ -19,7 +19,6 @@
 #define TORQUE              0x06
 #define ACTIVEASSIST        0x03
 #define RESIST              0x04
-#define CALIBRATION         0X05
 #define ACTIVE              0x02
 #define SPEED               0x07
 
@@ -46,8 +45,7 @@
 #define SET_CONTROL_PARAM   0x05
 #define GET_CONTROL_PARAM   0x06
 #define CALIBRATE           0x07
-#define SET_MECHANISM       0x08
-#define GET_VERSION         0x09
+#define GET_VERSION         0x10
 
 // Error types
 #define ANGSENSERR          0x0001

@@ -240,39 +240,39 @@ void checkForErrors() {
 //     setMCurrSensorParam();
 // }
 
-void updateExitCalibMode() {
-  // Reset encoder count
+// void updateExitCalibMode() {
+//   // Reset encoder count
 
-  // Update gains for vel. and curr sensors
-  angvelParam.m = ANGVELGAIN;
-  angvelParam.c = 0;
-  mcurrParam.m = MCURRGAIN;
-  mcurrParam.c = MCURROFFSET;
-  setAngleVelSensorParam();
-  setMCurrSensorParam();
+//   // Update gains for vel. and curr sensors
+//   angvelParam.m = ANGVELGAIN;
+//   angvelParam.c = 0;
+//   mcurrParam.m = MCURRGAIN;
+//   mcurrParam.c = MCURROFFSET;
+//   setAngleVelSensorParam();
+//   setMCurrSensorParam();
 
-  // Exit calibration mode.
-  ctrlType = NONE;
-}
+//   // Exit calibration mode.
+//   ctrlType = NONE;
+// }
 
 
 
-void calibProcess() {
-    // Check counter
-    ctrlType = NONE;
-    // Set the encoder offset count value.
-    encOffsetCount = plutoEncoder.read();
-    initSensorParam();
-    if (calibCount++ == maxCalibCount) {
-        // Calibration count done.
-        // Update parameters and exit calibration mode.
-        updateExitCalibMode();
-        // Update calibration.
-        calib = YESCALIB;
-    } else {
-        writeSensorStream();
-    }
-}
+// void calibProcess() {
+//     // Check counter
+//     ctrlType = NONE;
+//     // Set the encoder offset count value.
+//     encOffsetCount = plutoEncoder.read();
+//     initSensorParam();
+//     if (calibCount++ == maxCalibCount) {
+//         // Calibration count done.
+//         // Update parameters and exit calibration mode.
+//         updateExitCalibMode();
+//         // Update calibration.
+//         calib = YESCALIB;
+//     } else {
+//         writeSensorStream();
+//     }
+// }
 
 //void handleError() {
 //  // First clear any control mode.

@@ -58,10 +58,10 @@ void loop() {
     updateSensorData();
 
     //   Check if the program is currently in calibration mode.
-    if (ctrlType == CALIBRATION) {
-        // Handle the calibration procedure.
-        calibProcess();
-    }
+    // if (ctrlType == CALIBRATION) {
+    //     // Handle the calibration procedure.
+    //     calibProcess();
+    // }
     //    // Error check
     //   checkForErrors();
     //
