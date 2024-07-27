@@ -34,6 +34,7 @@ void setup() {
     /* Read incoming packets on an interval timer.
      * Reads incoming data every 1000usec. */ 
     readStream.begin(readHandleIncomingMessage, 1000);
+    // digitalWrite(LED_PIN, 1);
     
     // Set actuated/unactuated
     isActuated = 1;  // actuated = 1; Nonactuated = 0;

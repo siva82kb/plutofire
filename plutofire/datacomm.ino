@@ -74,7 +74,6 @@ void writeSensorStream() {
 
 // Read and handle incoming messages.
 void readHandleIncomingMessage() {
-    //  bt.dtr();
     byte _details;
     int plSz = serReader.readUpdate();
     byte _ctrltype, _ctrldet;
@@ -126,11 +125,16 @@ void readHandleIncomingMessage() {
             sendControlParameters(_details & 0x07);
             break;
         case CALIBRATE:
+            digitalWrite(13, 0);
             // Check the calibration value
             calib = NOCALIB;
             currMech = (_details < NOMECH) ? _details : NOMECH;
-            // Set the encoder offset value
-            encOffsetCount = plutoEncoder.read();
+            if (currMech != NOMECH) {
+                // Set the encoder offset value
+                encOffsetCount = plutoEncoder.read();
+                calib = YESCALIB;
+            }
+            // led.setColor(RGBLed::BLUE);
             break;
         }
         serReader.payloadHandled();

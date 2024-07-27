@@ -31,10 +31,10 @@ void readPlutoButtonState(void) {
   if (bounce.changed()) {
     int deboucedInput = bounce.read();
     if (deboucedInput == LOW) {
-      led.setColor(RGBLed::RED);
-      plutoButton = 1;
-      ledState = !ledState;             // SET ledState TO THE OPPOSITE OF ledState
-      digitalWrite(LED_PIN, ledState);  // WRITE THE NEW ledState
+    //   led.setColor(RGBLed::RED);
+    //   plutoButton = 1;
+    //   ledState = !ledState;             // SET ledState TO THE OPPOSITE OF ledState
+    //   digitalWrite(LED_PIN, ledState);  // WRITE THE NEW ledState
     }
   }
 }

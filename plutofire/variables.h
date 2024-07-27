@@ -61,8 +61,8 @@
 #define NOCALIB             0x00
 #define YESCALIB            0x01
 
-#define IO_SWITCH       17
-#define LED_PIN LED_BUILTIN
+#define IO_SWITCH           17
+#define LED_PIN             LED_BUILTIN
 
 #define ACTUATED            21
 byte isActuated;
