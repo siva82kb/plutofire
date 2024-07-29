@@ -43,11 +43,8 @@
         }
         else{
           current = desTorq/mechnicalConstant;
-           _pwm =  constrain(map(abs(current),0,maxCurrent,0.1*255,0.9*255),-229,229);
-//          
+          _pwm =  constrain(map(abs(current), 0, maxCurrent, 0.1*255, 0.9*255), -229, 229);  
         }
-     
-
       break;
 
      case RESIST:

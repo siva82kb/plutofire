@@ -103,11 +103,11 @@ void readHandleIncomingMessage() {
         case SET_CONTROL_PARAM:
             // Check if there is a change in control mode.
             if (ctrlType != (_details & 0x07)) {
-            // Change control mode.
-            ctrlType = (_details & 0x07);
-            // Reset desired angle and torque values.
-            desAng = 999;
-            desTorq = 0;
+                // Change control mode.
+                ctrlType = (_details & 0x07);
+                // Reset desired angle and torque values.
+                desAng = 999;
+                desTorq = 0;
             }
             // First check if it is control parameters.
             if ((_details & 0x10) == 0x10) {
