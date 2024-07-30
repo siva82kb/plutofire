@@ -53,6 +53,11 @@
 #define TORQSENSERR         0x0004
 #define MCURRSENSERR        0x0008
 
+// PWM Limits
+#define MINPWM              26
+#define MAXPWM              229
+#define MAXDELPWM           5
+
 // Operation status
 #define NOERR               0x00
 #define YESERR              0x01
@@ -127,7 +132,6 @@ float arom[] = {999,999};
 float prom[] = {999,999};
 float asssitProfile[10] = {0};
 
-
 // Mehanism
 byte currMech = NOMECH;
 
@@ -161,7 +165,9 @@ float torqTh = 0.05;
 float prev_ang;
 
 // Poition Control
-float pcKp = 0.0;
+float pcKp = 0.1;
+float pcKd = 0.01;
+float pcKi = 0.00001;
 float desAng = 0.0;
 
 // Torque Control
@@ -176,12 +182,12 @@ float km = -1;
 float tor;
 float neutral_ang;
 
-//float pwmval;
-
 float offsetTorque;
+float currPWM;
+float prevPWM;
 float prevError;
-unsigned long prevLoopTime;
 float errorSum;
+unsigned long prevLoopTime;
 int count;
 
 // Variables for calibration
@@ -201,3 +207,5 @@ Encoder plutoEncoder(PIN_A, PIN_B);
 long oldPosition = -999;
 elapsedMillis sincePrint;
 bool dir;
+
+// float target_pwm;

@@ -48,7 +48,7 @@ void updateSensorData(void) {
   ang.add(readEncoderAngle());
 
   // Estimated torque from the motor current
-  torque_est = (analogRead(MOTORCURR) * MCURRGAIN - maxCurrent) * mechnicalConstant;
+//   torque_est = (analogRead(MOTORCURR) * MCURRGAIN - maxCurrent) * mechnicalConstant;
 
   // Read the PLUTO button state
   readPlutoButtonState();

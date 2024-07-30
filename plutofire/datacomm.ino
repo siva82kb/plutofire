@@ -106,8 +106,10 @@ void readHandleIncomingMessage() {
                 // Change control mode.
                 ctrlType = (_details & 0x07);
                 // Reset desired angle and torque values.
-                desAng = 999;
                 desTorq = 0;
+                desAng = 999;
+                prevError = 999;
+                errorSum = 0.0;
             }
             // First check if it is control parameters.
             if ((_details & 0x10) == 0x10) {
