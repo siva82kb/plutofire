@@ -29,7 +29,7 @@ void updateControlLaw() {
                 break;
             }
             // A valid position target has been set.
-            if (abs((desAng - _ang)) <= 5) {
+            if (abs((desAng - _ang)) <= POS_CTRL_DBAND) {
                 break;
             }
             // Error more than the threshold.
@@ -97,7 +97,6 @@ void sendPWMToMotor(float pwm) {
         analogWrite(PWM, min(MAXPWM, max(-pwm, MINPWM)));
         // return -min(MAXPWM, max(-pwm, MINPWM));
     }
-    
 }
 
 

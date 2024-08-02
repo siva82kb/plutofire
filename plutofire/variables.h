@@ -66,6 +66,9 @@
 #define NOCALIB             0x00
 #define YESCALIB            0x01
 
+// Control related variables
+#define POS_CTRL_DBAND      2
+
 #define IO_SWITCH           17
 #define LED_PIN             LED_BUILTIN
 
