@@ -16,10 +16,10 @@
 // Control type
 #define NONE                0x00
 #define POSITION            0x01
-#define TORQUE              0x06
+#define ACTIVE              0x02
 #define ACTIVEASSIST        0x03
 #define RESIST              0x04
-#define ACTIVE              0x02
+#define TORQUE              0x06
 #define SPEED               0x07
 
 //Mechanisms
@@ -99,7 +99,7 @@ byte isActuated;
 #define MCURROFFSET         -maxCurrent
 
 #define mechnicalConstant   0.231 //for 48v 0.231; // for 24V 0.077;
-#define maxCurrent       8
+#define maxCurrent          8
 
 #define VERSION             "24.07"
 #define DEVID               "PLUTO240725"
@@ -170,8 +170,9 @@ float prev_ang;
 // Poition Control
 float pcKp = 0.1;
 float pcKd = 0.01;
-float pcKi = 0.00001;
+float pcKi = 0.0001;
 float desAng = 0.0;
+float ffTorq = 0.0;
 
 // Torque Control
 float tcKp = 0.0;

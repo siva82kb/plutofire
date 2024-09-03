@@ -28,18 +28,6 @@ void writeSensorStream() {
         outPayload.add(0.0);
     }
 
-    ////load cell values
-    //  outPayload.add(loadCell1);
-    //  outPayload.add(loadCell2);
-    //  outPayload.add(loadCell3);
-    //
-    //// EMC state
-    //  outPayload.add(emcReadState);
-    // // inputButton
-    //float temp = digitalRead(IO_SWITCH);
-    // outPayload.add(inputButton);
-    //outPayload.add(12);
-
     // Send packet.
     header[2] = 5 + outPayload.sz() * 4 + 1;
     header[3] = getProgramStatus(SENSORSTREAM);
@@ -106,7 +94,8 @@ void readHandleIncomingMessage() {
                 // Change control mode.
                 ctrlType = (_details & 0x07);
                 // Reset desired angle and torque values.
-                desTorq = 0;
+                desTorq = 0.;
+                ffTorq = 0.;
                 desAng = 999;
                 prevError = 999;
                 errorSum = 0.0;
@@ -117,6 +106,9 @@ void readHandleIncomingMessage() {
                 setControlParameters(ctrlType, plSz, 2, serReader.payload);
             } else if ((_details & 0x08) == 0x08) {
                 // Set target value.
+                setTargetParameters(ctrlType, plSz, 2, serReader.payload);
+            } else if ((_details & 0x02) == 0x20) {
+                // Set feedforward torque.
                 setTargetParameters(ctrlType, plSz, 2, serReader.payload);
             }
             break;

@@ -166,7 +166,7 @@ void setTargetParameters(byte ctype, int sz, int strtInx, byte* payload) {
   floatunion_t temp;
   switch (ctype) {
     case POSITION:
-      // Position control gain
+      // Position target
       _assignFloatUnionBytes(inx, payload, &temp);
       desAng = temp.num;
       break;
@@ -175,11 +175,16 @@ void setTargetParameters(byte ctype, int sz, int strtInx, byte* payload) {
       _assignFloatUnionBytes(inx, payload, &temp);
       desTorq = temp.num;
       break;
-
     case RESIST:
-
       break;
   }
+}
+
+// Update feedforward torque
+void setFeedforwardTorque(byte ctype, int sz, int strtInx, byte* payload) {
+    floatunion_t temp;
+    _assignFloatUnionBytes(strtInx, payload, &temp);
+    ffTorq = temp.num;
 }
 
 
