@@ -16,17 +16,18 @@ void writeSensorStream() {
     outPayload.newPacket();
     outPayload.add(ang.val(0, false));
     outPayload.add(torque_est);
-    outPayload.add(control.valf(0, false));
+    outPayload.add(fbControl.valf(0, false));
+    outPayload.add(ffControl.valf(0, false));
+    outPayload.add(desAng);
+    outPayload.add(desTorq);
     
-    // Add desired value of the controller,
-    // depending on the control mode.
-    if (ctrlType == POSITION) {
-        outPayload.add(desAng);
-    } else if (ctrlType == TORQUE) {
-        outPayload.add(desTorq);
-    } else {
-        outPayload.add(0.0);
-    }
+    // // Add desired value of the controller,
+    // // depending on the control mode.
+    // if (ctrlType == POSITION) {
+    // } else if (ctrlType == TORQUE) {
+    // } else {
+    //     outPayload.add(0.0);
+    // }
 
     // Send packet.
     header[2] = 5 + outPayload.sz() * 4 + 1;
@@ -84,10 +85,6 @@ void readHandleIncomingMessage() {
             updateSensorParameter(plSz, 2, serReader.payload);
             updateBufferSensorParam(false);
             break;
-    //      case GET_SENSOR_PARAM:
-    //        stream = false;
-    //        sendSensorParameters();
-    //        break;
         case SET_CONTROL_PARAM:
             // Check if there is a change in control mode.
             if (ctrlType != (_details & 0x07)) {
@@ -95,7 +92,6 @@ void readHandleIncomingMessage() {
                 ctrlType = (_details & 0x07);
                 // Reset desired angle and torque values.
                 desTorq = 0.;
-                ffTorq = 0.;
                 desAng = 999;
                 prevError = 999;
                 errorSum = 0.0;
@@ -104,12 +100,12 @@ void readHandleIncomingMessage() {
             if ((_details & 0x10) == 0x10) {
                 // Set control parameters.
                 setControlParameters(ctrlType, plSz, 2, serReader.payload);
-            } else if ((_details & 0x08) == 0x08) {
+            } else if ((_details & POSITIONTGT) == POSITIONTGT) {
                 // Set target value.
                 setTargetParameters(ctrlType, plSz, 2, serReader.payload);
-            } else if ((_details & 0x02) == 0x20) {
+            } else if ((_details & FEEDFORWARDTGT) == FEEDFORWARDTGT) {
                 // Set feedforward torque.
-                setTargetParameters(ctrlType, plSz, 2, serReader.payload);
+                setFeedforwardTorque(ctrlType, plSz, 2, serReader.payload);
             }
             break;
         case GET_CONTROL_PARAM:

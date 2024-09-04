@@ -47,6 +47,10 @@
 #define CALIBRATE           0x07
 #define GET_VERSION         0x10
 
+// Control/Target Parameter Detail
+#define POSITIONTGT         0x08
+#define FEEDFORWARDTGT      0x20    
+
 // Error types
 #define ANGSENSERR          0x0001
 #define VELSENSERR          0x0002
@@ -117,7 +121,8 @@ Buffer torque;
 float torque_est = 0;
 float previous_torque = 0;
 float offset_torque = 0;
-Buffer control;
+Buffer fbControl;
+Buffer ffControl;
 
 float loadCell1 = 12.3;
 float loadCell2 = 21.3;
@@ -172,7 +177,6 @@ float pcKp = 0.1;
 float pcKd = 0.01;
 float pcKi = 0.0001;
 float desAng = 0.0;
-float ffTorq = 0.0;
 
 // Torque Control
 float tcKp = 0.0;

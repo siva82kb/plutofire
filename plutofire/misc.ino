@@ -184,7 +184,7 @@ void setTargetParameters(byte ctype, int sz, int strtInx, byte* payload) {
 void setFeedforwardTorque(byte ctype, int sz, int strtInx, byte* payload) {
     floatunion_t temp;
     _assignFloatUnionBytes(strtInx, payload, &temp);
-    ffTorq = temp.num;
+    desTorq = temp.num;
 }
 
 

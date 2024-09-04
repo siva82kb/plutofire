@@ -7,20 +7,14 @@
 
 void updateControlLaw() {
     float _ang = ang.val(0, false);
-    float _currpwm = 0.0;
+    // float _currPWM = 0.0;
     float _currError = 0.0;
-    float cur;
-    float current;
-    float _delpwmsign;
+    float fbCurr = 0.0;
+    float fbPWM =0.0;
+    float ffCurr = 0.0;
+    float ffPWM = 0.0;
+    float _delPWMSign;
     switch (ctrlType) {
-        // case ACTIVE:
-        // // Admittance control.
-        // if (abs(torque_est) < torqTh) {
-        //     _currpwm = 0;
-        // } else {
-        //     _currpwm = -acKp * 10 * torque_est;
-        // }
-        // break;
         case POSITION:
             // Position control.
             // Check if position control is disabled.
@@ -37,13 +31,18 @@ void updateControlLaw() {
             errorSum = 0.999 * errorSum + _currError;
             prevError = (prevError == 999) ? _currError : prevError;
             // Compute the control current
-            current = pcKp * (_currError) + pcKi * errorSum + pcKd * (_currError - prevError);
-            _currpwm = convertCurrentToPWM(current);
+            fbCurr = pcKp * (_currError) + pcKi * errorSum + pcKd * (_currError - prevError);
+            fbPWM = convertCurrentToPWM(fbCurr);
+            // Compute the current for the feedforward torque
+            ffCurr = desTorq / mechnicalConstant;
+            ffPWM = convertCurrentToPWM(ffCurr);
+            currPWM = fbPWM + ffPWM;
             prevError = _currError;
             break;
         case TORQUE:
-            current = desTorq / mechnicalConstant;
-            _currpwm = convertCurrentToPWM(current);
+            ffCurr = desTorq / mechnicalConstant;
+            ffPWM = convertCurrentToPWM(ffCurr);
+            currPWM = fbPWM + ffPWM;
             break;
         case RESIST:
             // PD resistance control
@@ -55,14 +54,16 @@ void updateControlLaw() {
         case NONE:
             // Switch off controller.
             digitalWrite(ENABLE, LOW);
-            control.add(0.0);
+            fbControl.add(0.0);
+            ffControl.add(0.0);
             return;
     }
     // Limit the rate of change of PWM
-    currPWM = rateLimitValue(_currpwm, prevPWM, MAXDELPWM);
+    currPWM = rateLimitValue(currPWM, prevPWM, MAXDELPWM);
     // Send PWM value to motor controller & update control.
     sendPWMToMotor(currPWM);
-    control.add(currPWM);
+    fbControl.add(fbPWM);
+    ffControl.add(ffPWM);
     prevPWM = currPWM;
 }
 
