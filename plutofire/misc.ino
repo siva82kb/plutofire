@@ -140,11 +140,11 @@ void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
   int inx = strtInx;
   floatunion_t temp;
   switch (ctype) {
-    case ACTIVE:
-      // Admittance control gain
-      _assignFloatUnionBytes(inx, payload, &temp);
-      acKp = temp.num;
-      break;
+    // case ACTIVE:
+    //   // Admittance control gain
+    //   _assignFloatUnionBytes(inx, payload, &temp);
+    //   acKp = temp.num;
+    //   break;
     case POSITION:
       // Position control gain
       _assignFloatUnionBytes(inx, payload, &temp);
@@ -160,7 +160,29 @@ void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
   }
 }
 
-// Update the target parameters
+// Set position target
+void setTarget(byte* payload, int strtInx, byte ctrl) {
+    int inx = strtInx;
+    floatunion_t temp;
+    _assignFloatUnionBytes(inx, payload, &temp);
+    if (ctrl == POSITION) {
+        desAng = temp.num;
+    } else if (ctrl == TORQUE) {
+        desTorq = temp.num;
+    } else {
+        desAng = 999;
+        desTorq = 0.0;
+    }
+}
+
+// // Set torque target
+// void setTorqueTarget(byte* payload, int strtInx) {
+//     int inx = strtInx;
+//     floatunion_t temp;
+//     _assignFloatUnionBytes(inx, payload, &temp);
+//     desTorq = temp.num;
+// }
+
 void setTargetParameters(byte ctype, int sz, int strtInx, byte* payload) {
   int inx = strtInx;
   floatunion_t temp;

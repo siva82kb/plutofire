@@ -77,7 +77,6 @@ void loop() {
     // updateControl and write sensor data every 20ms
     if (sincePrint > 10) {
         sincePrint = 0;
-
         writeSensorStream();
         updateControlLaw();
     }

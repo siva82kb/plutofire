@@ -16,18 +16,17 @@ void writeSensorStream() {
     outPayload.newPacket();
     outPayload.add(ang.val(0, false));
     outPayload.add(torque_est);
-    outPayload.add(fbControl.valf(0, false));
-    outPayload.add(ffControl.valf(0, false));
-    outPayload.add(desAng);
-    outPayload.add(desTorq);
+    outPayload.add(control.valf(0, false));
     
-    // // Add desired value of the controller,
-    // // depending on the control mode.
-    // if (ctrlType == POSITION) {
-    // } else if (ctrlType == TORQUE) {
-    // } else {
-    //     outPayload.add(0.0);
-    // }
+    // Add desired value of the controller,
+    // depending on the control mode.
+    if (ctrlType == POSITION) {
+        outPayload.add(desAng);
+    } else if (ctrlType == TORQUE) {
+        outPayload.add(desTorq);
+    } else {
+        outPayload.add(0.0);
+    }
 
     // Send packet.
     header[2] = 5 + outPayload.sz() * 4 + 1;
@@ -80,51 +79,35 @@ void readHandleIncomingMessage() {
         case STOP_STREAM:
             stream = false;
             break;
-        case SET_SENSOR_PARAM:
-            // Update sensor parameters using payload.
-            updateSensorParameter(plSz, 2, serReader.payload);
-            updateBufferSensorParam(false);
-            break;
-        case SET_CONTROL_PARAM:
+        case SET_CONTROL_TYPE:
             // Check if there is a change in control mode.
-            if (ctrlType != (_details & 0x07)) {
+            if (ctrlType != _details) {
                 // Change control mode.
-                ctrlType = (_details & 0x07);
+                ctrlType = _details;
                 // Reset desired angle and torque values.
                 desTorq = 0.;
                 desAng = 999;
                 prevError = 999;
                 errorSum = 0.0;
             }
-            // First check if it is control parameters.
-            if ((_details & 0x10) == 0x10) {
-                // Set control parameters.
-                setControlParameters(ctrlType, plSz, 2, serReader.payload);
-            } else if ((_details & POSITIONTGT) == POSITIONTGT) {
-                // Set target value.
-                setTargetParameters(ctrlType, plSz, 2, serReader.payload);
-            } else if ((_details & FEEDFORWARDTGT) == FEEDFORWARDTGT) {
-                // Set feedforward torque.
-                setFeedforwardTorque(ctrlType, plSz, 2, serReader.payload);
+            break;
+        case SET_CONTROL_TARGET:
+            // Check if the current control type is POSITION.
+            if ((ctrlType == POSITION) || ((ctrlType == TORQUE))) {
+                // Set target.
+                setTarget(serReader.payload, 1, ctrlType);
             }
             break;
-        case GET_CONTROL_PARAM:
-            // Stop streaming
-            stream = false;
-            // Check the control type.
-            sendControlParameters(_details & 0x07);
-            break;
         case CALIBRATE:
-            digitalWrite(13, 0);
+            // Reset calibration
             // Check the calibration value
             calib = NOCALIB;
-            currMech = (_details < NOMECH) ? _details : NOMECH;
+            currMech = _details;
             if (currMech != NOMECH) {
                 // Set the encoder offset value
                 encOffsetCount = plutoEncoder.read();
                 calib = YESCALIB;
             }
-            // led.setColor(RGBLed::BLUE);
             break;
         }
         serReader.payloadHandled();
@@ -144,9 +127,9 @@ void sendControlParameters(byte ctype) {
   // Update Out data Buffer
   outPayload.newPacket();
   switch (ctype) {
-    case ACTIVE:
-      outPayload.add(acKp);
-      break;
+    // case ACTIVE:
+    //   outPayload.add(acKp);
+    //   break;
     case POSITION:
       outPayload.add(pcKp);
       outPayload.add(desAng);
