@@ -43,18 +43,20 @@
 // Control/Target Parameter Detail
 #define POSITIONTGT         0x08
 #define FEEDFORWARDTGT      0x20   
-#define INVALID_TARGET      999.0 
+
+// Control Law Related Definitions
+#define INVALID_TARGET      999.0
+#define INTEGRATOR_LIMIT    4.0
+#define MINPWM              26
+#define MAXPWM              229
+#define MAXDELPWM           5
+
 
 // Error types
 #define ANGSENSERR          0x0001
 #define VELSENSERR          0x0002
 #define TORQSENSERR         0x0004
 #define MCURRSENSERR        0x0008
-
-// PWM Limits
-#define MINPWM              26
-#define MAXPWM              229
-#define MAXDELPWM           5
 
 // Operation status
 #define NOERR               0x00
