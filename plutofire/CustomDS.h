@@ -4,6 +4,7 @@
  * 
  * Author: Sivakumar Balasubramanian
  * Created on: August 14 2018
+ * Updated on: September 06 2024
  */
  
 #ifndef CustomDS_h
@@ -28,24 +29,14 @@ class Buffer {
   public:
     Buffer();
     void add(float);
-    byte inx(void);
-    bool isFull(void);
-    float val(byte, bool);
-    float valf(byte, bool);
-    void setconvfac(float, float);
+    bool isEmpty(void);
+    float val(byte);
     
   private:
     static const byte N = 16;
     static const byte Nmask = N - (byte)1;
-    float _m, _c;
     float _data[N];
-    float _dataf[N];
     byte _inx;
-    bool _full;
-    byte _nf = 5;
-    float _acc;
-
-    float conval(float);
 };
 
 // Buffer for packaging float data into a byte array.

@@ -6,7 +6,8 @@
  */
 
 void updateControlLaw() {
-    float _ang = ang.val(0, false);
+    float _ang = ang.val(0);
+    float _tgt = target.val(0);
     // float _currPWM = 0.0;
     float _currError = 0.0;
     float curr = 0.0;
@@ -14,16 +15,29 @@ void updateControlLaw() {
     // float ffCurr = 0.0;
     // float ffPWM = 0.0;
     float _delPWMSign;
+    // If control is NONE. Switch off control and move on.
+    if (ctrlType == NONE) {
+        // Switch off controller.
+        digitalWrite(ENABLE, LOW);
+        control.add(0.0);
+        return;
+    }
+    // Else we need to take the appropriate action.
     switch (ctrlType) {
         case POSITION:
             // Position control.
             // Check if position control is disabled.
-            if (desAng == 999) {
+            if (_tgt == INVALID_TARGET) {
                 currPWM = 0.0;
+                err.add(0.0);
+                errdiff.add(0.0);
+                errsum.add(0.0);
                 break;
             }
+            // Update error related information.
+            
             // If the target is not within a error band.
-            _currError = desAng - _ang;
+            _currError = _tgt - _ang;
             if (abs((_currError)) <= POS_CTRL_DBAND) {
                 _currError = 0.0;
             }
@@ -40,7 +54,7 @@ void updateControlLaw() {
             prevError = _currError;
             break;
         case TORQUE:
-            curr = desTorq / mechnicalConstant;
+            curr = _tgt / mechnicalConstant;
             currPWM = convertCurrentToPWM(curr);
             break;
         case RESIST:
@@ -50,11 +64,6 @@ void updateControlLaw() {
             // _currpwm = constrain(map(abs(cur), 0, maxCurrent, 0.1 * 255, 0.9 * 255), -229, 229);
             // prev_ang = _ang;
             break;
-        case NONE:
-            // Switch off controller.
-            digitalWrite(ENABLE, LOW);
-            control.add(0.0);
-            return;
     }
     // Limit the rate of change of PWM
     currPWM = rateLimitValue(currPWM, prevPWM, MAXDELPWM);

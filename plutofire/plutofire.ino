@@ -41,6 +41,9 @@ void setup() {
 
     // No current mechanism.
     currMech = NOMECH;
+
+    // Set targets to invalid value 999.
+    target.add(INVALID_TARGET);
 }
 
 

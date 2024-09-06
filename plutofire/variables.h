@@ -29,6 +29,7 @@
 // Out data type
 #define SENSORSTREAM        0x00
 #define CONTROLPARAM        0x01
+#define DIAGNOSTICS         0x02
 
 // In data type
 #define GET_VERSION         0x00
@@ -37,10 +38,12 @@
 #define STOP_STREAM         0x03
 #define SET_CONTROL_TYPE    0x04
 #define SET_CONTROL_TARGET  0x05
+#define SET_DIAGNOSTICS     0x06
 
 // Control/Target Parameter Detail
 #define POSITIONTGT         0x08
-#define FEEDFORWARDTGT      0x20    
+#define FEEDFORWARDTGT      0x20   
+#define INVALID_TARGET      999.0 
 
 // Error types
 #define ANGSENSERR          0x0001
@@ -106,13 +109,13 @@ int enPPRnonActuated = 4096 ;
 
 // Sensor data buffers
 Buffer ang;
-Buffer angvel;
-Buffer mcurr;
 Buffer torque;
-float torque_est = 0;
-float previous_torque = 0;
-float offset_torque = 0;
 Buffer control;
+// Additional buffers
+Buffer err;
+Buffer errdiff;
+Buffer errsum;
+Buffer target;
 
 float loadCell1 = 12.3;
 float loadCell2 = 21.3;
@@ -166,12 +169,12 @@ float prev_ang;
 float pcKp = 0.1;
 float pcKd = 0.01;
 float pcKi = 0.001;
-float desAng = 0.0;
+// float desAng = 0.0;
 
 // Torque Control
 float tcKp = 0.0;
 float tcKd = 0.2;
-float desTorq = 0.0;
+// float desTorq = 0.0;
 
 // Resistance control
 float kp = -1;

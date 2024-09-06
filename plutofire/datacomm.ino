@@ -14,19 +14,19 @@ void writeSensorStream() {
     
     // Update Out data Buffer
     outPayload.newPacket();
-    outPayload.add(ang.val(0, false));
-    outPayload.add(torque_est);
-    outPayload.add(control.valf(0, false));
+    outPayload.add(ang.val(0));
+    outPayload.add(0);
+    outPayload.add(control.val(0));
+    outPayload.add(target.val(0));
     
     // Add desired value of the controller,
     // depending on the control mode.
-    if (ctrlType == POSITION) {
-        outPayload.add(desAng);
-    } else if (ctrlType == TORQUE) {
-        outPayload.add(desTorq);
-    } else {
-        outPayload.add(0.0);
-    }
+    // if (ctrlType == POSITION) {
+    // } else if (ctrlType == TORQUE) {
+    //     outPayload.add(desTorq);
+    // } else {
+    //     outPayload.add(0.0);
+    // }
 
     // Send packet.
     header[2] = 5 + outPayload.sz() * 4 + 1;
@@ -49,18 +49,15 @@ void writeSensorStream() {
     for (int i = 0; i < outPayload.sz() * 4; i++) {
         _temp = outPayload.getByte(i);
         bt.write(_temp);
-        Serial.print(_temp);
         chksum += _temp;
     }
     // Send the PLUTO buttons state byte
     bt.write(plutoButton);
-    Serial.print(plutoButton);
     chksum += plutoButton;
     
     // Send Checksum
     bt.write(chksum);
     bt.flush();
-    Serial.print("\n");
 }
 
 // Read and handle incoming messages.
@@ -82,14 +79,21 @@ void readHandleIncomingMessage() {
         case STOP_STREAM:
             stream = false;
             break;
+        case SET_DIAGNOSTICS:
+            stream = true;
+            streamType = DIAGNOSTICS;
+            break;
         case SET_CONTROL_TYPE:
             // Check if there is a change in control mode.
             if (ctrlType != _details) {
                 // Change control mode.
                 ctrlType = _details;
-                // Reset desired angle and torque values.
-                desTorq = 0.;
-                desAng = 999;
+                // Set the target depending on the control mode.
+                if (ctrlType == TORQUE) {
+                    target.add(0.0);
+                } else {
+                    target.add(INVALID_TARGET);
+                }
                 prevError = 999;
                 errorSum = 0.0;
             }
@@ -135,11 +139,11 @@ void sendControlParameters(byte ctype) {
     //   break;
     case POSITION:
       outPayload.add(pcKp);
-      outPayload.add(desAng);
+      outPayload.add(target.val(0));
       break;
     case TORQUE:
       outPayload.add(tcKp);
-      outPayload.add(desTorq);
+      outPayload.add(target.val(0));
       break;
   }
 
