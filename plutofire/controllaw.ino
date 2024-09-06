@@ -76,7 +76,8 @@ float controlPosition() {
     _preverr = (_prevtgt != INVALID_TARGET) ? _prevtgt - _prevang : _currerr;
     // Error sum.
     _errsum = 0.9999 * _errsum + _currerr;
-    _errsum = min(INTEGRATOR_LIMIT, max(-INTEGRATOR_LIMIT, _errsum));
+    float _intlim = INTEGRATOR_LIMIT / pcKi;
+    _errsum = min(_intlim, max(-_intlim, _errsum));
     
     // Compute the PID control current
     _curr = pcKp * (_currerr) + pcKi * _errsum + pcKd * (_currerr - _preverr);

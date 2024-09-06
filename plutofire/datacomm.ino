@@ -18,19 +18,17 @@ void writeSensorStream() {
     outPayload.add(0);
     outPayload.add(control.val(0));
     outPayload.add(target.val(0));
-    
-    // Add desired value of the controller,
-    // depending on the control mode.
-    // if (ctrlType == POSITION) {
-    // } else if (ctrlType == TORQUE) {
-    //     outPayload.add(desTorq);
-    // } else {
-    //     outPayload.add(0.0);
-    // }
+
+    // Add additional data if in DIAGNOSTICS mode
+    if (streamType == DIAGNOSTICS) {
+        outPayload.add(err.val(0));
+        outPayload.add(errdiff.val(0));
+        outPayload.add(errsum.val(0));
+    }
 
     // Send packet.
     header[2] = 5 + outPayload.sz() * 4 + 1;
-    header[3] = getProgramStatus(SENSORSTREAM);
+    header[3] = getProgramStatus(streamType);
     header[4] = errorval[0];
     header[5] = errorval[1];
     header[6] = getMechActType();
@@ -94,8 +92,6 @@ void readHandleIncomingMessage() {
                 } else {
                     target.add(INVALID_TARGET);
                 }
-                prevError = 999;
-                errorSum = 0.0;
             }
             break;
         case SET_CONTROL_TARGET:

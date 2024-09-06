@@ -51,7 +51,6 @@
 #define MAXPWM              229
 #define MAXDELPWM           5
 
-
 // Error types
 #define ANGSENSERR          0x0001
 #define VELSENSERR          0x0002
@@ -113,11 +112,11 @@ int enPPRnonActuated = 4096 ;
 Buffer ang;
 Buffer torque;
 Buffer control;
+Buffer target;
 // Additional buffers
 Buffer err;
 Buffer errdiff;
 Buffer errsum;
-Buffer target;
 
 float loadCell1 = 12.3;
 float loadCell2 = 21.3;
@@ -185,30 +184,24 @@ float km = -1;
 float tor;
 float neutral_ang;
 
-float offsetTorque;
-float currPWM;
-float prevPWM;
-float prevError;
-float errorSum;
-unsigned long prevLoopTime;
-int count;
+// float offsetTorque;
+// float currPWM;
+// float prevPWM;
+// float prevError;
+// float errorSum;
+// unsigned long prevLoopTime;
+// int count;
 
-// Variables for calibration
-byte maxCalibCount = 16;
-byte calibCount = 0;
+// // Variables for calibration
+// byte maxCalibCount = 16;
+// byte calibCount = 0;
 
 /* Tempoary section : To be formated later */
 Bounce bounce = Bounce();
 
-//Timer interrupt for reading serial data
+// Timer interrupt for reading serial data
 IntervalTimer readStream;
 
 SoftwareSerial bt(0, 1);
 RGBLed led(19, 18, 20, RGBLed::COMMON_CATHODE);
 Encoder plutoEncoder(PIN_A, PIN_B);
-
-long oldPosition = -999;
-elapsedMillis sincePrint;
-bool dir;
-
-// float target_pwm;
