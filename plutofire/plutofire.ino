@@ -79,6 +79,7 @@ void loop() {
         sincePrint = 0;
         writeSensorStream();
         updateControlLaw();
+        // Serial.println(VERSION);
     }
 
     delay(10);

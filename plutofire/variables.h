@@ -96,7 +96,7 @@ byte isActuated;
 #define mechnicalConstant   0.231 //for 48v 0.231; // for 24V 0.077;
 #define maxCurrent          8
 
-#define VERSION             "24.07"
+#define VERSION             "24.09"
 #define DEVID               "PLUTO240725"
 
 // ofset angle

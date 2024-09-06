@@ -49,15 +49,18 @@ void writeSensorStream() {
     for (int i = 0; i < outPayload.sz() * 4; i++) {
         _temp = outPayload.getByte(i);
         bt.write(_temp);
+        Serial.print(_temp);
         chksum += _temp;
     }
     // Send the PLUTO buttons state byte
     bt.write(plutoButton);
+    Serial.print(plutoButton);
     chksum += plutoButton;
     
     // Send Checksum
     bt.write(chksum);
     bt.flush();
+    Serial.print("\n");
 }
 
 // Read and handle incoming messages.
