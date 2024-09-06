@@ -6,64 +6,88 @@
  */
 
 void updateControlLaw() {
-    float _ang = ang.val(0, false);
-    float _currpwm = 0.0;
-    float _currError = 0.0;
-    float cur;
-    float current;
-    float _delpwmsign;
+    // float _currPWM = 0.0;
+    // float _currError = 0.0;
+    float curr = 0.0;
+    float _currPWM = 0.0;
+    float _prevPWM = control.val(0);
+    // float ffCurr = 0.0;
+    // float ffPWM = 0.0;
+    // float _delPWMSign;
+    // If control is NONE. Switch off control and move on.
+    if (ctrlType == NONE) {
+        // Switch off controller.
+        digitalWrite(ENABLE, LOW);
+        control.add(0.0);
+        return;
+    }
+    // Else we need to take the appropriate action.
     switch (ctrlType) {
-        // case ACTIVE:
-        // // Admittance control.
-        // if (abs(torque_est) < torqTh) {
-        //     _currpwm = 0;
-        // } else {
-        //     _currpwm = -acKp * 10 * torque_est;
-        // }
-        // break;
         case POSITION:
             // Position control.
-            // Check if position control is disabled.
-            if (desAng == 999) {
-                currPWM = 0.0;
-                break;
-            }
-            // A valid position target has been set.
-            if (abs((desAng - _ang)) <= POS_CTRL_DBAND) {
-                break;
-            }
-            // Error more than the threshold.
-            _currError = desAng - _ang;
-            errorSum = 0.999 * errorSum + _currError;
-            prevError = (prevError == 999) ? _currError : prevError;
-            // Compute the control current
-            current = pcKp * (_currError) + pcKi * errorSum + pcKd * (_currError - prevError);
-            _currpwm = convertCurrentToPWM(current);
-            prevError = _currError;
+            _currPWM = controlPosition();
             break;
         case TORQUE:
-            current = desTorq / mechnicalConstant;
-            _currpwm = convertCurrentToPWM(current);
+            // Feedfoward torque control.
+            curr = target.val(0) / mechnicalConstant;
+            _currPWM = convertCurrentToPWM(curr);
             break;
         case RESIST:
             // PD resistance control
             // desTorq = -(kp * (_ang - neutral_ang) + kd * 0.02 * _ang - kd * 0.02 * prev_ang);
             // cur = desTorq / mechnicalConstant;
-            // _currpwm = constrain(map(abs(cur), 0, maxCurrent, 0.1 * 255, 0.9 * 255), -229, 229);
+            // __currpwm = constrain(map(abs(cur), 0, maxCurrent, 0.1 * 255, 0.9 * 255), -229, 229);
             // prev_ang = _ang;
             break;
-        case NONE:
-            // Switch off controller.
-            digitalWrite(ENABLE, LOW);
-            control.add(0.0);
-            return;
     }
     // Limit the rate of change of PWM
-    currPWM = rateLimitValue(_currpwm, prevPWM, MAXDELPWM);
+    _currPWM = rateLimitValue(_currPWM, _prevPWM, MAXDELPWM);
+    // Clip PWM value
+    _currPWM = min(MAXPWM, max(-MAXPWM, _currPWM));
     // Send PWM value to motor controller & update control.
-    sendPWMToMotor(currPWM);
-    control.add(currPWM);
-    prevPWM = currPWM;
+    sendPWMToMotor(_currPWM);
+    control.add(_currPWM);
+}
+
+// Position controller implementation
+float controlPosition() {
+    float _currang = ang.val(0);
+    float _currtgt = target.val(0);
+    float _prevang = ang.val(1);
+    float _prevtgt = target.val(1);
+    float _curr;
+    float _currerr, _preverr;
+    float _errsum = errsum.val(0);
+
+    // Check if position control is disabled.
+    if (_currtgt == INVALID_TARGET) {
+        err.add(0.0);
+        errdiff.add(0.0);
+        errsum.add(0.0);
+        return 0.0;
+    }
+
+    // Update error related information.
+    // Current error
+    _currerr = _currtgt - _currang;
+    // Ignore small errors.
+    _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? 0.0 : _currerr;
+    // Previous error
+    _preverr = (_prevtgt != INVALID_TARGET) ? _prevtgt - _prevang : _currerr;
+    // Error sum.
+    _errsum = 0.9999 * _errsum + _currerr;
+    float _intlim = INTEGRATOR_LIMIT / pcKi;
+    _errsum = min(_intlim, max(-_intlim, _errsum));
+    
+    // Compute the PID control current
+    _curr = pcKp * (_currerr) + pcKi * _errsum + pcKd * (_currerr - _preverr);
+
+    // Log error information
+    err.add(_currerr);
+    errdiff.add(_currerr - _preverr);
+    errsum.add(_errsum);
+
+    return convertCurrentToPWM(_curr);
 }
 
 // Rate limit a variable.

@@ -16,11 +16,8 @@
 // Control type
 #define NONE                0x00
 #define POSITION            0x01
-#define ACTIVE              0x02
-#define ACTIVEASSIST        0x03
-#define RESIST              0x04
-#define TORQUE              0x06
-#define SPEED               0x07
+#define RESIST              0x02
+#define TORQUE              0x03
 
 //Mechanisms
 #define WFE                 0x00
@@ -30,33 +27,35 @@
 #define NOMECH              0x04
 
 // Out data type
-#define SENSORSTREAM        0x05
-#define SENSORPARAM         0x01
-#define DEVICEERROR         0x02
-#define CONTROLPARAM        0x03
-#define DIAGNOSTICS         0x04
+#define SENSORSTREAM        0x00
+#define CONTROLPARAM        0x01
+#define DIAGNOSTICS         0x02
 
 // In data type
-#define SET_ERROR           0x00
-#define START_STREAM        0x01
-#define STOP_STREAM         0x02
-#define SET_SENSOR_PARAM    0x03
-#define GET_SENSOR_PARAM    0x04
-#define SET_CONTROL_PARAM   0x05
-#define GET_CONTROL_PARAM   0x06
-#define CALIBRATE           0x07
-#define GET_VERSION         0x10
+#define GET_VERSION         0x00
+#define CALIBRATE           0x01
+#define START_STREAM        0x02
+#define STOP_STREAM         0x03
+#define SET_CONTROL_TYPE    0x04
+#define SET_CONTROL_TARGET  0x05
+#define SET_DIAGNOSTICS     0x06
+
+// Control/Target Parameter Detail
+#define POSITIONTGT         0x08
+#define FEEDFORWARDTGT      0x20   
+
+// Control Law Related Definitions
+#define INVALID_TARGET      999.0
+#define INTEGRATOR_LIMIT    4.0
+#define MINPWM              26
+#define MAXPWM              229
+#define MAXDELPWM           5
 
 // Error types
 #define ANGSENSERR          0x0001
 #define VELSENSERR          0x0002
 #define TORQSENSERR         0x0004
 #define MCURRSENSERR        0x0008
-
-// PWM Limits
-#define MINPWM              26
-#define MAXPWM              229
-#define MAXDELPWM           5
 
 // Operation status
 #define NOERR               0x00
@@ -101,7 +100,7 @@ byte isActuated;
 #define mechnicalConstant   0.231 //for 48v 0.231; // for 24V 0.077;
 #define maxCurrent          8
 
-#define VERSION             "24.07"
+#define VERSION             "24.09"
 #define DEVID               "PLUTO240725"
 
 // ofset angle
@@ -111,13 +110,13 @@ int enPPRnonActuated = 4096 ;
 
 // Sensor data buffers
 Buffer ang;
-Buffer angvel;
-Buffer mcurr;
 Buffer torque;
-float torque_est = 0;
-float previous_torque = 0;
-float offset_torque = 0;
 Buffer control;
+Buffer target;
+// Additional buffers
+Buffer err;
+Buffer errdiff;
+Buffer errsum;
 
 float loadCell1 = 12.3;
 float loadCell2 = 21.3;
@@ -170,14 +169,13 @@ float prev_ang;
 // Poition Control
 float pcKp = 0.1;
 float pcKd = 0.01;
-float pcKi = 0.0001;
-float desAng = 0.0;
-float ffTorq = 0.0;
+float pcKi = 0.001;
+// float desAng = 0.0;
 
 // Torque Control
 float tcKp = 0.0;
 float tcKd = 0.2;
-float desTorq = 0.0;
+// float desTorq = 0.0;
 
 // Resistance control
 float kp = -1;
@@ -186,30 +184,24 @@ float km = -1;
 float tor;
 float neutral_ang;
 
-float offsetTorque;
-float currPWM;
-float prevPWM;
-float prevError;
-float errorSum;
-unsigned long prevLoopTime;
-int count;
+// float offsetTorque;
+// float currPWM;
+// float prevPWM;
+// float prevError;
+// float errorSum;
+// unsigned long prevLoopTime;
+// int count;
 
-// Variables for calibration
-byte maxCalibCount = 16;
-byte calibCount = 0;
+// // Variables for calibration
+// byte maxCalibCount = 16;
+// byte calibCount = 0;
 
 /* Tempoary section : To be formated later */
 Bounce bounce = Bounce();
 
-//Timer interrupt for reading serial data
+// Timer interrupt for reading serial data
 IntervalTimer readStream;
 
 SoftwareSerial bt(0, 1);
 RGBLed led(19, 18, 20, RGBLed::COMMON_CATHODE);
 Encoder plutoEncoder(PIN_A, PIN_B);
-
-long oldPosition = -999;
-elapsedMillis sincePrint;
-bool dir;
-
-// float target_pwm;

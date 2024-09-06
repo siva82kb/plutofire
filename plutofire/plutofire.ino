@@ -34,53 +34,34 @@ void setup() {
     /* Read incoming packets on an interval timer.
      * Reads incoming data every 1000usec. */ 
     readStream.begin(readHandleIncomingMessage, 1000);
-    // digitalWrite(LED_PIN, 1);
     
     // Set actuated/unactuated
     isActuated = 1;  // actuated = 1; Nonactuated = 0;
 
     // No current mechanism.
     currMech = NOMECH;
+
+    // Set targets to invalid value 999.
+    target.add(INVALID_TARGET);
+
+    // Initialize variable.
+    streamType = SENSORSTREAM;
+    stream = true;
+    ctrlType = NONE;
+    calib = NOCALIB;
+    error = NOERR;
+    errorval[0] = 0x00;
+    errorval[1] = 0x00;
 }
 
 
 void loop() {
-    //dir = !dir;
-
-    // use this blocck for quick check
-    //analogWrite(PWM, 229);   // sets the pin as output
-    //digitalWrite(ENABLE, HIGH);   // sets the pin as output
-    //digitalWrite(CW, HIGH);
-
-    // for checking angle
-    //SerialUSB.println(encAngle());
-
     // Read and update sensor values.
     updateSensorData();
-
-    //   Check if the program is currently in calibration mode.
-    // if (ctrlType == CALIBRATION) {
-    //     // Handle the calibration procedure.
-    //     calibProcess();
-    // }
-    //    // Error check
-    //   checkForErrors();
-    //
-    ////     Clear control type
-    //   if (error == YESERR) {
-    ////      Clear control mode.
-    //    // ctrlType = NONE;
-    //    }
-
-
-
-    // updateControl and write sensor data every 20ms
-    if (sincePrint > 10) {
-        sincePrint = 0;
-
-        writeSensorStream();
-        updateControlLaw();
-    }
-
-    delay(10);
+    // Send sensordata
+    writeSensorStream();
+    // Update control
+    updateControlLaw();
+    // Relax. You only need to work at around 200Hz
+    delay(2);
 }

@@ -56,13 +56,13 @@ void updateSensorData(void) {
 
 void _displaySerialUSB() {
   // put your main code here, to run repeatedly:
-  Serial.print(ang.val((byte)0, false));
-  Serial.print(" ");
-  Serial.print(angvel.val((byte)0, false));
-  Serial.print(" ");
-  Serial.print(mcurr.val((byte)0, false));
-  Serial.print(" ");
-  Serial.print(torque.val((byte)0, false));
+  Serial.print(ang.val(0));
+//   Serial.print(" ");
+//   Serial.print(angvel.val(0));
+//   Serial.print(" ");
+//   Serial.print(mcurr.val(0));
+//   Serial.print(" ");
+//   Serial.print(torque.val(0));
   Serial.print("\n");
 }
 
@@ -108,29 +108,29 @@ void updateResistanceControlInfo(int sz, int strtInx, byte* payload) {
 }
 
 
-// Update sensor param in the different buffers
-void updateBufferSensorParam(bool reset) {
-  if (reset == true) {
-    torqParam.m = 1.0;
-    torqParam.c = 0.0;
-  }
-  setTorqSensorParam();
-}
+// // Update sensor param in the different buffers
+// void updateBufferSensorParam(bool reset) {
+//   if (reset == true) {
+//     torqParam.m = 1.0;
+//     torqParam.c = 0.0;
+//   }
+//   setTorqSensorParam();
+// }
 
-// Update sensor parameters for torque sensor
-void setTorqSensorParam() {
-  torque.setconvfac(torqParam.m, torqParam.c);
-}
+// // Update sensor parameters for torque sensor
+// void setTorqSensorParam() {
+//   torque.setconvfac(torqParam.m, torqParam.c);
+// }
 
-// Update sensor parameters for angular velocity sensor
-void setAngleVelSensorParam() {
-  angvel.setconvfac(angvelParam.m, angvelParam.c);
-}
+// // Update sensor parameters for angular velocity sensor
+// void setAngleVelSensorParam() {
+//   angvel.setconvfac(angvelParam.m, angvelParam.c);
+// }
 
-// Update sensor parameters for motor current sensor
-void setMCurrSensorParam() {
-  mcurr.setconvfac(mcurrParam.m, mcurrParam.c);
-}
+// // Update sensor parameters for motor current sensor
+// void setMCurrSensorParam() {
+//   mcurr.setconvfac(mcurrParam.m, mcurrParam.c);
+// }
 
 
 
@@ -140,11 +140,11 @@ void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
   int inx = strtInx;
   floatunion_t temp;
   switch (ctype) {
-    case ACTIVE:
-      // Admittance control gain
-      _assignFloatUnionBytes(inx, payload, &temp);
-      acKp = temp.num;
-      break;
+    // case ACTIVE:
+    //   // Admittance control gain
+    //   _assignFloatUnionBytes(inx, payload, &temp);
+    //   acKp = temp.num;
+    //   break;
     case POSITION:
       // Position control gain
       _assignFloatUnionBytes(inx, payload, &temp);
@@ -160,44 +160,63 @@ void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
   }
 }
 
-// Update the target parameters
-void setTargetParameters(byte ctype, int sz, int strtInx, byte* payload) {
-  int inx = strtInx;
-  floatunion_t temp;
-  switch (ctype) {
-    case POSITION:
-      // Position target
-      _assignFloatUnionBytes(inx, payload, &temp);
-      desAng = temp.num;
-      break;
-    case TORQUE:
-      // Torque control gain
-      _assignFloatUnionBytes(inx, payload, &temp);
-      desTorq = temp.num;
-      break;
-    case RESIST:
-      break;
-  }
+// Set position target
+void setTarget(byte* payload, int strtInx, byte ctrl) {
+    int inx = strtInx;
+    floatunion_t temp;
+    _assignFloatUnionBytes(inx, payload, &temp);
+    if ((ctrl == POSITION) || (ctrl == TORQUE)) {
+        target.add(temp.num);
+    } else {
+        target.add(INVALID_TARGET);
+    }
 }
 
-// Update feedforward torque
-void setFeedforwardTorque(byte ctype, int sz, int strtInx, byte* payload) {
-    floatunion_t temp;
-    _assignFloatUnionBytes(strtInx, payload, &temp);
-    ffTorq = temp.num;
-}
+// // Set torque target
+// void setTorqueTarget(byte* payload, int strtInx) {
+//     int inx = strtInx;
+//     floatunion_t temp;
+//     _assignFloatUnionBytes(inx, payload, &temp);
+//     desTorq = temp.num;
+// }
+
+// void setTargetParameters(byte ctype, int sz, int strtInx, byte* payload) {
+//   int inx = strtInx;
+//   floatunion_t temp;
+//   switch (ctype) {
+//     case POSITION:
+//       // Position target
+//       _assignFloatUnionBytes(inx, payload, &temp);
+//       desAng = temp.num;
+//       break;
+//     case TORQUE:
+//       // Torque control gain
+//       _assignFloatUnionBytes(inx, payload, &temp);
+//       desTorq = temp.num;
+//       break;
+//     case RESIST:
+//       break;
+//   }
+// }
+
+// // Update feedforward torque
+// void setFeedforwardTorque(byte ctype, int sz, int strtInx, byte* payload) {
+//     floatunion_t temp;
+//     _assignFloatUnionBytes(strtInx, payload, &temp);
+//     desTorq = temp.num;
+// }
 
 
 void initSensorParam() {
-  torqParam.m = 1.0;
-  torqParam.c = 0.0;
-  angvelParam.m = 1.0;
-  angvelParam.c = 0.0;
-  mcurrParam.m = MCURRGAIN;
-  mcurrParam.c = MCURROFFSET;
-  setTorqSensorParam();
-  setAngleVelSensorParam();
-  setMCurrSensorParam();
+//   torqParam.m = 1.0;
+//   torqParam.c = 0.0;
+//   angvelParam.m = 1.0;
+//   angvelParam.c = 0.0;
+//   mcurrParam.m = MCURRGAIN;
+//   mcurrParam.c = MCURROFFSET;
+//   setTorqSensorParam();
+//   setAngleVelSensorParam();
+//   setMCurrSensorParam();
 }
 
 // Check for any errors in the operation
@@ -208,7 +227,7 @@ void checkForErrors() {
   // Check sensor values.
 
 
-  if (abs(ang.valf(0, false)) > 120.0) {
+  if (abs(ang.val(0)) > 120.0) {
     _errval = _errval | ANGSENSERR;
   }
   //  if (abs(angvel.valf(0, false)) > 500.) {

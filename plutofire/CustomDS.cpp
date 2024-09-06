@@ -4,71 +4,43 @@
  * 
  * Author: Sivakumar Balasubramanian
  * Created on: August 15 2018
+ * Updated on: September 06 2024
  */
- 
+
 #include "Arduino.h"
 #include "CustomDS.h"
 
 // Buffer class definitions
 Buffer::Buffer() {
-  _full = false;
-  _inx = 0;
-  _acc = 0;
-  _m = 1.0;
-  _c = 0.0;
+  _inx = 0xFF;
 }
 
 void Buffer::add(float val) {
-  // Add data.
-  float _val = conval(val);
-  _data[_inx & Nmask] = _val;
-  if (_full == false) {
-    _full = (_inx == 0);
-  }
-  // Get filtered data
-  byte _i = _inx - _nf;
-  _acc = _acc + _val - _data[_i & Nmask];
-  _dataf[_inx & Nmask] = _acc / _nf;
-  _inx++;
+    // Check if the buffer is empty. If so, fill the entire,
+    // buffer with the first value.
+    if (_inx == 0xFF) {
+        for (int i = 0; i < N; i++) {
+            _data[i] = val;
+        }
+        _inx = 0;
+    } else {
+        _inx += 1;
+        _inx = _inx & Nmask;    
+        _data[_inx] = val;
+    }
 }
 
-byte Buffer::inx(void) {
-  return _inx & Nmask;
+bool Buffer::isEmpty(void) {
+  return _inx == 0xFF;
 }
 
-bool Buffer::isFull(void) {
-  return _full;
-}
-
-float Buffer::val(byte pos, bool past) {
-  byte _i;
-  if (past == true) {
-    _i = _inx - pos - (byte) 1;
-  } else {
-    _i = _inx + pos - (byte) 1;
-  }
-  return _data[_i & Nmask];
-}
-
-float Buffer::valf(byte pos, bool past) {
-  byte _i;
-  if (past == true) {
-    _i = _inx - pos - (byte) 1;
-   
-  } else {
-    _i = _inx + pos - (byte) 1;
-   
-  }
-  return _dataf[_i & Nmask];
-}
-
-void Buffer::setconvfac(float m, float c) {
-  _m = m;
-  _c = c;
-}
-
-float Buffer::conval(float val) {
-  return  _m * val + _c;
+float Buffer::val(byte pos) {
+  // Cap position to the max. possible value.
+  pos = (pos >= N) ? N - 1 : pos;
+  // Negative values get capped to 0. They will always
+  // return the current value.
+  pos = (pos < 0) ? 0 : pos;
+  return _data[(_inx - pos) & Nmask];
 }
 
 // OutDataBuffer class definitions
