@@ -2,8 +2,8 @@
  * PLUTOFIRE
  * Firmware code implementing all device features.
  * 
- * Author: Aravind Nehrujee, Ann David, Sivakumar Balasubramanian
- * Email: {anndavid293, siva82kb} @ @gmail.com 
+ * Author: Sivakumar Balasubramanian
+ * Email: siva82kb@gmail.com 
  */
 
 #include "variables.h"

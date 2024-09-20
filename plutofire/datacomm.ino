@@ -27,7 +27,12 @@ void writeSensorStream() {
     }
 
     // Send packet.
-    header[2] = 5 + outPayload.sz() * 4 + 1;
+    header[2] = (
+        4                      // Four headers 
+        + outPayload.sz() * 4  // Float sensor data 
+        + 1                    // PLUTO button data
+        + 1                    // Checksum 
+    );                  
     header[3] = getProgramStatus(streamType);
     header[4] = errorval[0];
     header[5] = errorval[1];
