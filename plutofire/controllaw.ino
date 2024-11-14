@@ -87,7 +87,18 @@ float controlPosition() {
     errdiff.add(_currerr - _preverr);
     errsum.add(_errsum);
 
-    return convertCurrentToPWM(_curr);
+    return boundPositionControl(convertCurrentToPWM(_curr));
+}
+
+// Bound the position control output.
+float boundPositionControl(float pwm_value) {
+    if (pwm_value > ctrlBound * MAXPWM) {
+        return ctrlBound * MAXPWM;
+    } else if (pwm_value < - ctrlBound * MAXPWM) {
+        return - ctrlBound * MAXPWM;
+    } else {
+        return pwm_value;
+    }
 }
 
 // Rate limit a variable.
@@ -103,7 +114,7 @@ float rateLimitValue(float curr, float prev, float rlim) {
 
 // Convert current to PWM
 float convertCurrentToPWM(float current) {
-    float _sign = current >= 0? +1 : -1; 
+    float _sign = current >= 0? +1 : -1;
     return _sign * map(abs(current), 0, maxCurrent, MINPWM, MAXPWM);
 }
 

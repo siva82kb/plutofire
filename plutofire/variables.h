@@ -47,9 +47,10 @@
 // Control Law Related Definitions
 #define INVALID_TARGET      999.0
 #define INTEGRATOR_LIMIT    4.0
-#define MINPWM              26
-#define MAXPWM              229
-#define MAXDELPWM           5
+#define PWMRESOLN           12      // This has been changed from 8. Suggestions from Aravind.
+#define MINPWM              410     // 10% of 4095
+#define MAXPWM              3686    // 90% of 4095
+#define MAXDELPWM           80      // Changed from 5
 
 // Error types
 #define ANGSENSERR          0x0001
@@ -100,7 +101,7 @@ byte isActuated;
 #define mechnicalConstant   0.231 //for 48v 0.231; // for 24V 0.077;
 #define maxCurrent          8
 
-#define VERSION             "24.09"
+#define VERSION             "24.11"
 #define DEVID               "PLUTO240725"
 
 // ofset angle
@@ -170,7 +171,15 @@ float prev_ang;
 float pcKp = 0.1;
 float pcKd = 0.01;
 float pcKi = 0.001;
+// The parameter to bound the PWM/Current value to within +/- ctrlBound.
+// Its a value between 0 and 1: 0 means < 10% PWM, and 1 means 90% PWM.
+float ctrlBound = 1.0;
 // float desAng = 0.0;
+
+// Defining the mechanism dependent controller gains
+const float mechKp[] = { 0.1, 0.1, 0.1, 0.1 };
+const float mechKd[] = { 0.01, 0.01, 0.01, 0.01 };
+const float mechKi[] = { 0.001, 0.001, 0.001, 0.001 };
 
 // Torque Control
 float tcKp = 0.0;

@@ -15,7 +15,7 @@ void setup() {
     Serial.begin(115200);
     bt.begin(115200);
     analogReadResolution(12);
-    analogWriteResolution(8);
+    analogWriteResolution(PWMRESOLN);
     analogWriteFrequency(4, 2000);
 
     // Motor control pins
