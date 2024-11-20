@@ -75,51 +75,105 @@ void readHandleIncomingMessage() {
         // Handle new message.
         // Check the command type.
         switch (serReader.payload[0]) {
-        case START_STREAM:
-            stream = true;
-            streamType = SENSORSTREAM;
-            break;
-        case STOP_STREAM:
-            stream = false;
-            break;
-        case SET_DIAGNOSTICS:
-            stream = true;
-            streamType = DIAGNOSTICS;
-            break;
-        case SET_CONTROL_TYPE:
-            // Check if there is a change in control mode.
-            if (ctrlType != _details) {
-                // Change control mode.
-                ctrlType = _details;
-                // Set the target depending on the control mode.
-                if (ctrlType == TORQUE) {
-                    target.add(0.0);
-                } else {
-                    target.add(INVALID_TARGET);
-                }
-            }
-            break;
-        case SET_CONTROL_TARGET:
-            // Check if the current control type is POSITION.
-            if ((ctrlType == POSITION) || ((ctrlType == TORQUE))) {
-                // Set target.
-                setTarget(serReader.payload, 1, ctrlType);
-            }
-            break;
-        case CALIBRATE:
-            // Reset calibration
-            // Check the calibration value
-            calib = NOCALIB;
-            currMech = _details;
-            if (currMech != NOMECH) {
-                // Set the encoder offset value
-                encOffsetCount = plutoEncoder.read();
-                calib = YESCALIB;
-            }
-            break;
+          case START_STREAM:
+              stream = true;
+              streamType = SENSORSTREAM;
+              break;
+          case STOP_STREAM:
+              stream = false;
+              break;
+          case SET_DIAGNOSTICS:
+              stream = true;
+              streamType = DIAGNOSTICS;
+              break;
+          case SET_CONTROL_TYPE:
+              // Check if there is a change in control mode.
+              if (ctrlType != _details) {
+                  // Change control mode.
+                  ctrlType = _details;
+                  // Set the target depending on the control mode.
+                  if (ctrlType == TORQUE) {
+                      target.add(0.0);
+                  } else {
+                      target.add(INVALID_TARGET);
+                  }
+              }
+              break;
+          case SET_CONTROL_TARGET:
+              // Check if the current control type is POSITION.
+              if ((ctrlType == POSITION) || ((ctrlType == TORQUE))) {
+                  // Set target.
+                  setTarget(serReader.payload, 1, ctrlType);
+              }
+              break;
+          case CALIBRATE:
+              // Reset calibration
+              // Check the calibration value
+              calib = NOCALIB;
+              currMech = _details;
+              if (currMech != NOMECH) {
+                  // Set the encoder offset value
+                  encOffsetCount = plutoEncoder.read();
+                  calib = YESCALIB;
+              }
+              break;
+          case GET_VERSION:
+              stream = false;
+              Serial.println("Version");
+              // Send the current firmware version.
+              sendVersionDetails();
+              break;
         }
         serReader.payloadHandled();
     }
+}
+
+void sendVersionDetails() {
+  // Format:
+  // 255 | 255 | No. of bytes | Status | Error Val 1 | Error Val 2 | ...
+  // [Current Mechanism][isActuated] | Payload | Chksum
+  byte header[] = {0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,0x00};
+  byte chksum = 0xFE;
+  byte _temp;
+  
+  // Send packet.
+  header[2] = (
+      4                      // Four headers 
+      + strlen(fwVersion)    // Version string length
+      + 1                    // Comma separator
+      + strlen(deviceId)     // Deviice ID string length 
+      + 1                    // Checksum 
+  );
+  header[3] = getProgramStatus(VERSION);
+  header[4] = errorval[0];
+  header[5] = errorval[1];
+  header[6] = getMechActType();
+  chksum += header[2] + header[3] + header[4] + header[5] + header[6];
+
+  // Send the header.
+  bt.write(header[0]);
+  bt.write(header[1]);
+  bt.write(header[2]);
+  bt.write(header[3]);
+  bt.write(header[4]);
+  bt.write(header[5]);
+  bt.write(header[6]);
+  
+  // Send Device ID
+  for (int i = 0; i < strlen(deviceId); i++) {
+    bt.write(deviceId[i]);
+    chksum += deviceId[i];
+  }
+  bt.write(',');
+  chksum += ',';
+  // Send firmware version
+  for (int i = 0; i < strlen(fwVersion); i++) {
+    bt.write(fwVersion[i]);
+    chksum += fwVersion[i];
+  }
+  // Send Checksum
+  bt.write(chksum);
+  bt.flush();
 }
 
 void sendControlParameters(byte ctype) {

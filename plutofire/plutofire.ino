@@ -59,7 +59,9 @@ void loop() {
     // Read and update sensor values.
     updateSensorData();
     // Send sensordata
-    writeSensorStream();
+    if (stream) {
+      writeSensorStream();
+    }
     // Update control
     updateControlLaw();
     // Relax. You only need to work at around 200Hz

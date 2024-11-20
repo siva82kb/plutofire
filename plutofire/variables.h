@@ -20,16 +20,19 @@
 #define TORQUE              0x03
 
 // Mechanisms
-#define WFE                 0x00
-#define WUD                 0x01
-#define WPS                 0x02
-#define HOC                 0x03
-#define NOMECH              0x04
+#define NOMECH              0x00
+#define WFE                 0x01
+#define WUD                 0x02
+#define WPS                 0x03
+#define HOC                 0x04
+#define FME1                0x05
+#define FME2                0x06
 
 // Out data type
 #define SENSORSTREAM        0x00
 #define CONTROLPARAM        0x01
 #define DIAGNOSTICS         0x02
+#define VERSION             0x03
 
 // In data type
 #define GET_VERSION         0x00
@@ -101,12 +104,13 @@ byte isActuated;
 #define mechnicalConstant   0.231 //for 48v 0.231; // for 24V 0.077;
 #define maxCurrent          8
 
-#define VERSION             "24.11"
-#define DEVID               "PLUTO240725"
+// Version and device ID.
+const char* fwVersion = "24.11";
+const char* deviceId  = "PLUTO240725";
 
 // ofset angle
 int encOffsetCount = 0;
-int enPPRActuated = 4096;   //6400 for new motor 4096 for old motor
+int enPPRActuated = 6400;   //6400 for new motor 4096 for old motor
 int enPPRnonActuated = 4096 ;
 
 // Sensor data buffers
