@@ -8,7 +8,7 @@
 void updateControlLaw() {
     // float _currPWM = 0.0;
     // float _currError = 0.0;
-    float curr = 0.0;
+    float _currI = 0.0;
     float _currPWM = 0.0;
     float _prevPWM = control.val(0);
     // float ffCurr = 0.0;
@@ -25,12 +25,13 @@ void updateControlLaw() {
     switch (ctrlType) {
         case POSITION:
             // Position control.
-            _currPWM = controlPosition();
+            _currI = controlPosition();
+            _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
             break;
         case TORQUE:
             // Feedfoward torque control.
-            curr = target.val(0) / mechnicalConstant;
-            _currPWM = convertCurrentToPWM(curr);
+            _currI = target.val(0) / mechnicalConstant;
+            _currPWM = convertCurrentToPWM(_currI);
             break;
         case RESIST:
             // PD resistance control
@@ -76,7 +77,7 @@ float controlPosition() {
     _preverr = (_prevtgt != INVALID_TARGET) ? _prevtgt - _prevang : _currerr;
     // Error sum.
     _errsum = 0.9999 * _errsum + _currerr;
-    float _intlim = INTEGRATOR_LIMIT / pcKi;
+    float _intlim = ctrlBound * INTEGRATOR_LIMIT / pcKi;
     _errsum = min(_intlim, max(-_intlim, _errsum));
     
     // Compute the PID control current
@@ -87,7 +88,7 @@ float controlPosition() {
     errdiff.add(_currerr - _preverr);
     errsum.add(_errsum);
 
-    return boundPositionControl(convertCurrentToPWM(_curr));
+    return _curr;
 }
 
 // Bound the position control output.
@@ -134,6 +135,19 @@ void sendPWMToMotor(float pwm) {
     }
 }
 
+void setControlParamForMech() {
+  // Cannot set controller parameters for NOMECH
+  if (currMech == NOMECH) {
+    pcKp = 0;
+    pcKd = 0;
+    pcKi = 0;
+    return;  
+  }
+  // Else
+  pcKp = mechKp[currMech - 1];
+  pcKd = mechKd[currMech - 1];
+  pcKi = mechKi[currMech - 1];
+}
 
 byte limitPWM(float p) {
   if (p < 0) {

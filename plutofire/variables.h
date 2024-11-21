@@ -42,6 +42,7 @@
 #define SET_CONTROL_TYPE    0x04
 #define SET_CONTROL_TARGET  0x05
 #define SET_DIAGNOSTICS     0x06
+#define SET_CONTROL_BOUND   0x07
 
 // Control/Target Parameter Detail
 #define POSITIONTGT         0x08
@@ -53,7 +54,7 @@
 #define PWMRESOLN           12      // This has been changed from 8. Suggestions from Aravind.
 #define MINPWM              410     // 10% of 4095
 #define MAXPWM              3686    // 90% of 4095
-#define MAXDELPWM           80      // Changed from 5
+#define MAXDELPWM           40      // Changed from 5
 
 // Error types
 #define ANGSENSERR          0x0001
@@ -107,6 +108,7 @@ byte isActuated;
 // Version and device ID.
 const char* fwVersion = "24.11";
 const char* deviceId  = "PLUTO240725";
+const char* compileDate = __DATE__ " " __TIME__;
 
 // ofset angle
 int encOffsetCount = 0;
