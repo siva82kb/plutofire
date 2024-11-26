@@ -93,13 +93,12 @@ float controlPosition() {
 
 // Bound the position control output.
 float boundPositionControl(float pwm_value) {
-    if (pwm_value > ctrlBound * MAXPWM) {
+    if (pwm_value > MAXPWM) {
         return ctrlBound * MAXPWM;
-    } else if (pwm_value < - ctrlBound * MAXPWM) {
+    } else if (pwm_value < - MAXPWM) {
         return - ctrlBound * MAXPWM;
-    } else {
-        return pwm_value;
     }
+    return ctrlBound * pwm_value;
 }
 
 // Rate limit a variable.

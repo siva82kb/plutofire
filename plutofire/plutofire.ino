@@ -52,6 +52,11 @@ void setup() {
     error = NOERR;
     errorval[0] = 0x00;
     errorval[1] = 0x00;
+
+    // Reset packet number and run time.
+    packetNumber.num = 0;
+    startTime = millis();
+    runTime.num = 0;
 }
 
 
@@ -66,4 +71,6 @@ void loop() {
     updateControlLaw();
     // Relax. You only need to work at around 200Hz
     delay(2);
+    packetNumber.num += 1;
+    runTime.num = millis() - startTime;
 }

@@ -106,7 +106,9 @@ void writeSensorStream() {
 
     // Send packet.
     header[2] = (
-        4                      // Four headers 
+        4                      // Four headers
+        + 2                    // Packet number int16
+        + 4                    // Run time
         + outPayload.sz() * 4  // Float sensor data 
         + 1                    // Control bound data
         + 1                    // PLUTO button data
@@ -126,7 +128,19 @@ void writeSensorStream() {
     bt.write(header[4]);
     bt.write(header[5]);
     bt.write(header[6]);
+
+    // Send packet number
+    for (int i = 0; i < 2; i++) {
+      bt.write(packetNumber.bytes[i]);
+      chksum += packetNumber.bytes[i];
+    }
     
+    // Send current run time
+    for (int i = 0; i < 4; i++) {
+      bt.write(runTime.bytes[i]);
+      chksum += runTime.bytes[i];
+    }
+
     // Send the payload with the floats first
     for (int i = 0; i < outPayload.sz() * 4; i++) {
         _temp = outPayload.getByte(i);

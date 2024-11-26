@@ -43,6 +43,7 @@
 #define SET_CONTROL_TARGET  0x05
 #define SET_DIAGNOSTICS     0x06
 #define SET_CONTROL_BOUND   0x07
+#define RESET_PACKETNO      0x08
 
 // Control/Target Parameter Detail
 #define POSITIONTGT         0x08
@@ -133,6 +134,13 @@ float loadCell3 = 32.1;
 volatile byte plutoButton = 1;
 bool ledState = 1;
 
+// Packet Counter.
+uint16union_t packetNumber;
+
+// run time
+unsigned long startTime;
+ulongunion_t runTime;
+
 float prev_time = 0, prev_torque = 0;
 float torq_df = 0;
 
@@ -141,7 +149,7 @@ float arom[] = {999,999};
 float prom[] = {999,999};
 float asssitProfile[10] = {0};
 
-// Mehanism
+// Mechanism
 byte currMech = NOMECH;
 
 // Sensor parameters
