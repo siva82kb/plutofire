@@ -10,14 +10,9 @@ void _assignFloatUnionBytes(int inx, byte* bytes, floatunion_t* temp) {
 
 float readEncoderAngle() {
     long newPosition = plutoEncoder.read() - encOffsetCount;
-    // if (newPosition != oldPosition) {
-    //     oldPosition = newPosition;
-    // }
-
     if (isActuated) {
         return (360.0 * newPosition / (enPPRActuated * 4));
     }
-    
     return ((360.0 * newPosition / (enPPRnonActuated)));
 }
 

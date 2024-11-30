@@ -2,8 +2,8 @@
  * PLUTOFIRE
  * Firmware code implementing all device features.
  * 
- * Author: Aravind Nehrujee, Ann David, Sivakumar Balasubramanian
- * Email: {anndavid293, siva82kb} @ @gmail.com 
+ * Author: Sivakumar Balasubramanian
+ * Email: siva82kb@gmail.com 
  */
 
 #include "variables.h"
@@ -15,7 +15,7 @@ void setup() {
     Serial.begin(115200);
     bt.begin(115200);
     analogReadResolution(12);
-    analogWriteResolution(8);
+    analogWriteResolution(PWMRESOLN);
     analogWriteFrequency(4, 2000);
 
     // Motor control pins
@@ -52,6 +52,11 @@ void setup() {
     error = NOERR;
     errorval[0] = 0x00;
     errorval[1] = 0x00;
+
+    // Reset packet number and run time.
+    packetNumber.num = 0;
+    startTime = millis();
+    runTime.num = 0;
 }
 
 
@@ -59,9 +64,13 @@ void loop() {
     // Read and update sensor values.
     updateSensorData();
     // Send sensordata
-    writeSensorStream();
+    if (stream) {
+      writeSensorStream();
+    }
     // Update control
     updateControlLaw();
     // Relax. You only need to work at around 200Hz
     delay(2);
+    packetNumber.num += 1;
+    runTime.num = millis() - startTime;
 }
