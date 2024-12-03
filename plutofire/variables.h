@@ -18,6 +18,7 @@
 #define POSITION            0x01
 #define RESIST              0x02
 #define TORQUE              0x03
+#define POSITIONAAN         0x04
 
 // Mechanisms
 #define NOMECH              0x00
@@ -44,10 +45,7 @@
 #define SET_DIAGNOSTICS     0x06
 #define SET_CONTROL_BOUND   0x07
 #define RESET_PACKETNO      0x08
-
-// Control/Target Parameter Detail
-#define POSITIONTGT         0x08
-#define FEEDFORWARDTGT      0x20   
+#define SET_CONTROL_DIR     0x09   
 
 // Control Law Related Definitions
 #define INVALID_TARGET      999.0
@@ -78,11 +76,6 @@
 #define LED_PIN             LED_BUILTIN
 
 #define ACTUATED            21
-byte isActuated;
-
-// torque sensor pind
-#define torqueData          8
-#define torqueClock         7
 
 // Encoder reading pins
 #define PIN_A               2//40// 29// 36//
@@ -96,18 +89,15 @@ byte isActuated;
 #define PWM                 4//19
 #define ENABLE              5//20//36//40//51 brown
 
-#define RESET               39  
+// Motor constants
+#define MECHANICAL_CONST    0.231 //for 48v 0.231; // for 24V 0.077;
+#define MAX_CURRENT         8
 
-// Sensor gains
-#define ANGVELGAIN          1//50000. * 360. / (60 * 4096.)
-#define MCURRGAIN           2 * maxCurrent / 4096.0
-#define MCURROFFSET         -maxCurrent
-
-#define mechnicalConstant   0.231 //for 48v 0.231; // for 24V 0.077;
-#define maxCurrent          8
+// Actuated device?
+byte isActuated;
 
 // Version and device ID.
-const char* fwVersion = "24.11";
+const char* fwVersion = "24.12";
 const char* deviceId  = "PLUTO240725";
 const char* compileDate = __DATE__ " " __TIME__;
 
@@ -121,14 +111,11 @@ Buffer ang;
 Buffer torque;
 Buffer control;
 Buffer target;
+
 // Additional buffers
 Buffer err;
 Buffer errdiff;
 Buffer errsum;
-
-float loadCell1 = 12.3;
-float loadCell2 = 21.3;
-float loadCell3 = 32.1;
 
 // Variable to hold the current PLUTO button state.
 volatile byte plutoButton = 1;
@@ -141,23 +128,8 @@ uint16union_t packetNumber;
 unsigned long startTime;
 ulongunion_t runTime;
 
-float prev_time = 0, prev_torque = 0;
-float torq_df = 0;
-
-// Active assist parameters
-float arom[] = {999,999};
-float prom[] = {999,999};
-float asssitProfile[10] = {0};
-
 // Mechanism
 byte currMech = NOMECH;
-
-// Sensor parameters
-struct SensorParam {
-  float m;
-  float c;
-};
-SensorParam torqParam, angvelParam, mcurrParam;
 
 // Program status
 byte streamType = SENSORSTREAM;
@@ -173,14 +145,6 @@ SerialReader serReader;
 // Out data buffer
 OutDataBuffer4Float outPayload;
 
-// Control variables
-float dT = 0.01;
-
-// Admittance Control
-float acKp = 0.1;
-float torqTh = 0.05;
-float prev_ang;
-
 // Poition Control
 float pcKp = 0.1;
 float pcKd = 0.01;
@@ -188,17 +152,13 @@ float pcKi = 0.001;
 // The parameter to bound the PWM/Current value to within +/- ctrlBound.
 // Its a value between 0 and 1: 0 means < 10% PWM, and 1 means 90% PWM.
 float ctrlBound = 1.0;
-// float desAng = 0.0;
+// Direction variables for assymetric control of assistance.
+int8_t ctrlDir = 0;
 
 // Defining the mechanism dependent controller gains
 const float mechKp[] = { 0.1, 0.1, 0.1, 0.1 };
 const float mechKd[] = { 0.01, 0.01, 0.01, 0.01 };
 const float mechKi[] = { 0.001, 0.001, 0.001, 0.001 };
-
-// Torque Control
-float tcKp = 0.0;
-float tcKd = 0.2;
-// float desTorq = 0.0;
 
 // Resistance control
 float kp = -1;
@@ -206,18 +166,6 @@ float kd = -1;
 float km = -1;
 float tor;
 float neutral_ang;
-
-// float offsetTorque;
-// float currPWM;
-// float prevPWM;
-// float prevError;
-// float errorSum;
-// unsigned long prevLoopTime;
-// int count;
-
-// // Variables for calibration
-// byte maxCalibCount = 16;
-// byte calibCount = 0;
 
 /* Tempoary section : To be formated later */
 Bounce bounce = Bounce();

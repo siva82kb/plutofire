@@ -71,36 +71,36 @@ byte getMechActType(void) {
     return ((currMech << 4) | isActuated);
 }
 
-// Update sensor parameter using  byte array
-void updateSensorParameter(int sz, int strtInx, byte* payload) {
-  int inx = strtInx;
-  floatunion_t temp;
-  // Torque sensor.
-  _assignFloatUnionBytes(inx, payload, &temp);
-  torqParam.m = temp.num;
-  inx += 4;
-  _assignFloatUnionBytes(inx, payload, &temp);
-  torqParam.c = temp.num;
-  inx += 4;
-}
-// Update sensor parameter using  byte array
-void updateResistanceControlInfo(int sz, int strtInx, byte* payload) {
-  int inx = strtInx;
-  floatunion_t temp;
-  // Torque sensor.
-  _assignFloatUnionBytes(inx, payload, &temp);
-  kp = temp.num;
-  inx += 4;
-  _assignFloatUnionBytes(inx, payload, &temp);
-  kd = temp.num;
-  inx += 4;
-  _assignFloatUnionBytes(inx, payload, &temp);
-  km = temp.num;
-  inx += 4;
-  _assignFloatUnionBytes(inx, payload, &temp);
-  neutral_ang = temp.num;
-  inx += 4;
-}
+// // Update sensor parameter using  byte array
+// void updateSensorParameter(int sz, int strtInx, byte* payload) {
+//   int inx = strtInx;
+//   floatunion_t temp;
+//   // Torque sensor.
+//   _assignFloatUnionBytes(inx, payload, &temp);
+//   torqParam.m = temp.num;
+//   inx += 4;
+//   _assignFloatUnionBytes(inx, payload, &temp);
+//   torqParam.c = temp.num;
+//   inx += 4;
+// }
+// // Update sensor parameter using  byte array
+// void updateResistanceControlInfo(int sz, int strtInx, byte* payload) {
+//   int inx = strtInx;
+//   floatunion_t temp;
+//   // Torque sensor.
+//   _assignFloatUnionBytes(inx, payload, &temp);
+//   kp = temp.num;
+//   inx += 4;
+//   _assignFloatUnionBytes(inx, payload, &temp);
+//   kd = temp.num;
+//   inx += 4;
+//   _assignFloatUnionBytes(inx, payload, &temp);
+//   km = temp.num;
+//   inx += 4;
+//   _assignFloatUnionBytes(inx, payload, &temp);
+//   neutral_ang = temp.num;
+//   inx += 4;
+// }
 
 
 // // Update sensor param in the different buffers
@@ -135,23 +135,19 @@ void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
   int inx = strtInx;
   floatunion_t temp;
   switch (ctype) {
-    // case ACTIVE:
-    //   // Admittance control gain
-    //   _assignFloatUnionBytes(inx, payload, &temp);
-    //   acKp = temp.num;
-    //   break;
     case POSITION:
       // Position control gain
       _assignFloatUnionBytes(inx, payload, &temp);
-      pcKp = temp.num;
+      // pcKp = temp.num;
       break;
     case TORQUE:
       // Torque control gain
       _assignFloatUnionBytes(inx, payload, &temp);
-      tcKp = temp.num;
+      // tcKp = temp.num;
       break;
     case RESIST:
-      updateResistanceControlInfo(sz, inx, payload);
+      // updateResistanceControlInfo(sz, inx, payload);
+      break;
   }
 }
 
@@ -160,7 +156,7 @@ void setTarget(byte* payload, int strtInx, byte ctrl) {
     int inx = strtInx;
     floatunion_t temp;
     _assignFloatUnionBytes(inx, payload, &temp);
-    if ((ctrl == POSITION) || (ctrl == TORQUE)) {
+    if ((ctrl == POSITION) || (ctrl == POSITIONAAN) || (ctrl == TORQUE)) {
         target.add(temp.num);
     } else {
         target.add(INVALID_TARGET);

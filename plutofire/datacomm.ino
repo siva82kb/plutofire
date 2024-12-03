@@ -42,25 +42,35 @@ void readHandleIncomingMessage() {
                       setControlParamForMech();
                       // Initial control bound is set to zero.
                       ctrlBound = 0.0;
+                      // Set control direction.
+                      ctrlDir = 0;
                   }
               }
               break;
           case SET_CONTROL_TARGET:
               // Check if the current control type is POSITION.
-              if ((ctrlType == POSITION) || ((ctrlType == TORQUE))) {
+              if ((ctrlType == POSITION) 
+                  || (ctrlType == POSITIONAAN)
+                  || (ctrlType == TORQUE)) {
                   // Set target.
                   setTarget(serReader.payload, 1, ctrlType);
               }
               break;
           case SET_CONTROL_BOUND:
               // Check if the current control type is POSITION.
-              if (ctrlType == POSITION) {
+              ctrlBound = 0.0;
+              if ((ctrlType == POSITION)
+                  || (ctrlType == POSITIONAAN)) {
                   ctrlBound = _details / 255.0;
-              } else {
-                  ctrlBound = 0.0;
               }
               break;
-          
+          case SET_CONTROL_DIR:
+              // Check if the current control type is POSITIONAAN.
+              ctrlDir = 0;
+              if (ctrlType == POSITIONAAN) {
+                  ctrlDir = _details;
+              }
+              break;
           case CALIBRATE:
               // Reset calibration
               // Check the calibration value
@@ -111,6 +121,7 @@ void writeSensorStream() {
         + 4                    // Run time
         + outPayload.sz() * 4  // Float sensor data 
         + 1                    // Control bound data
+        + 1                    // Control direction data
         + 1                    // PLUTO button data
         + 1                    // Checksum 
     );                  
@@ -152,6 +163,10 @@ void writeSensorStream() {
     byte _ctrlb = (byte) (255 * ctrlBound);
     bt.write(_ctrlb);
     chksum += _ctrlb;
+    
+    // Send the control direction byte
+    bt.write(ctrlDir);
+    chksum += ctrlDir;
 
     // Send the PLUTO buttons state byte
     bt.write(plutoButton);
@@ -236,11 +251,11 @@ void sendControlParameters(byte ctype) {
     //   outPayload.add(acKp);
     //   break;
     case POSITION:
-      outPayload.add(pcKp);
+      // outPayload.add(pcKp);
       outPayload.add(target.val(0));
       break;
     case TORQUE:
-      outPayload.add(tcKp);
+      // outPayload.add(tcKp);
       outPayload.add(target.val(0));
       break;
   }
