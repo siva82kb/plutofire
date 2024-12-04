@@ -1,5 +1,22 @@
 
 
+/*
+ * Check if there is heartbeat.
+ */
+void checkHeartbeat() {
+  // Check if a heartbeat was recently received.
+  if (0.001 * (millis() - lastRxdHeartbeat) < MAX_HBEAT_INTERVAL) {
+    // Everything is good. No heart beat related error.
+    deviceError.num &= ~NOHEARTBEAT;
+  } else {
+    // No heartbeat received.
+    // Setting error flag.
+    deviceError.num |= NOHEARTBEAT;
+    setControlType(NONE);
+  }
+}
+
+
 void _assignFloatUnionBytes(int inx, byte* bytes, floatunion_t* temp) {
   temp->bytes[0] = bytes[inx];
   temp->bytes[1] = bytes[inx + 1];
@@ -9,11 +26,11 @@ void _assignFloatUnionBytes(int inx, byte* bytes, floatunion_t* temp) {
 
 
 float readEncoderAngle() {
-    long newPosition = plutoEncoder.read() - encOffsetCount;
-    if (isActuated) {
-        return (360.0 * newPosition / (enPPRActuated * 4));
-    }
-    return ((360.0 * newPosition / (enPPRnonActuated)));
+  long newPosition = plutoEncoder.read() - encOffsetCount;
+  if (isActuated) {
+    return (360.0 * newPosition / (enPPRActuated * 4));
+  }
+  return ((360.0 * newPosition / (enPPRnonActuated)));
 }
 
 
@@ -26,10 +43,10 @@ void readPlutoButtonState(void) {
   if (bounce.changed()) {
     int deboucedInput = bounce.read();
     if (deboucedInput == LOW) {
-    //   led.setColor(RGBLed::RED);
-    //   plutoButton = 1;
-    //   ledState = !ledState;             // SET ledState TO THE OPPOSITE OF ledState
-    //   digitalWrite(LED_PIN, ledState);  // WRITE THE NEW ledState
+      //   led.setColor(RGBLed::RED);
+      //   plutoButton = 1;
+      //   ledState = !ledState;             // SET ledState TO THE OPPOSITE OF ledState
+      //   digitalWrite(LED_PIN, ledState);  // WRITE THE NEW ledState
     }
   }
 }
@@ -43,7 +60,7 @@ void updateSensorData(void) {
   ang.add(readEncoderAngle());
 
   // Estimated torque from the motor current
-//   torque_est = (analogRead(MOTORCURR) * MCURRGAIN - maxCurrent) * mechnicalConstant;
+  //   torque_est = (analogRead(MOTORCURR) * MCURRGAIN - maxCurrent) * mechnicalConstant;
 
   // Read the PLUTO button state
   readPlutoButtonState();
@@ -52,12 +69,12 @@ void updateSensorData(void) {
 void _displaySerialUSB() {
   // put your main code here, to run repeatedly:
   Serial.print(ang.val(0));
-//   Serial.print(" ");
-//   Serial.print(angvel.val(0));
-//   Serial.print(" ");
-//   Serial.print(mcurr.val(0));
-//   Serial.print(" ");
-//   Serial.print(torque.val(0));
+  //   Serial.print(" ");
+  //   Serial.print(angvel.val(0));
+  //   Serial.print(" ");
+  //   Serial.print(mcurr.val(0));
+  //   Serial.print(" ");
+  //   Serial.print(torque.val(0));
   Serial.print("\n");
 }
 
@@ -67,8 +84,8 @@ byte getProgramStatus(byte dtype) {
 }
 
 byte getMechActType(void) {
-    // CURR MECH | CURR MECH | CURR MECH | CURR MECH | X | X | X | IS ACTUATED
-    return ((currMech << 4) | isActuated);
+  // CURR MECH | CURR MECH | CURR MECH | CURR MECH | X | X | X | IS ACTUATED
+  return ((currMech << 4) | isActuated);
 }
 
 // // Update sensor parameter using  byte array
@@ -153,14 +170,14 @@ void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
 
 // Set position target
 void setTarget(byte* payload, int strtInx, byte ctrl) {
-    int inx = strtInx;
-    floatunion_t temp;
-    _assignFloatUnionBytes(inx, payload, &temp);
-    if ((ctrl == POSITION) || (ctrl == POSITIONAAN) || (ctrl == TORQUE)) {
-        target.add(temp.num);
-    } else {
-        target.add(INVALID_TARGET);
-    }
+  int inx = strtInx;
+  floatunion_t temp;
+  _assignFloatUnionBytes(inx, payload, &temp);
+  if ((ctrl == POSITION) || (ctrl == POSITIONAAN) || (ctrl == TORQUE)) {
+    target.add(temp.num);
+  } else {
+    target.add(INVALID_TARGET);
+  }
 }
 
 // // Set torque target
@@ -199,50 +216,50 @@ void setTarget(byte* payload, int strtInx, byte ctrl) {
 
 
 void initSensorParam() {
-//   torqParam.m = 1.0;
-//   torqParam.c = 0.0;
-//   angvelParam.m = 1.0;
-//   angvelParam.c = 0.0;
-//   mcurrParam.m = MCURRGAIN;
-//   mcurrParam.c = MCURROFFSET;
-//   setTorqSensorParam();
-//   setAngleVelSensorParam();
-//   setMCurrSensorParam();
+  //   torqParam.m = 1.0;
+  //   torqParam.c = 0.0;
+  //   angvelParam.m = 1.0;
+  //   angvelParam.c = 0.0;
+  //   mcurrParam.m = MCURRGAIN;
+  //   mcurrParam.c = MCURROFFSET;
+  //   setTorqSensorParam();
+  //   setAngleVelSensorParam();
+  //   setMCurrSensorParam();
 }
 
 // Check for any errors in the operation
-void checkForErrors() {
-  error = NOERR;
-  uint16_t _errval = 0;
+// void checkForErrors() {
+// error = NOERR;
+// uint16_t _errval = 0;
 
-  // Check sensor values.
-
-
-  if (abs(ang.val(0)) > 120.0) {
-    _errval = _errval | ANGSENSERR;
-  }
-  //  if (abs(angvel.valf(0, false)) > 500.) {
-  //    _errval = _errval | VELSENSERR;
-  //  }
-  //  if (abs(torque.valf(0, false)) > 4.0) {
-  //    _errval = _errval | TORQSENSERR;
-  //  }
-  //  if (abs(mcurr.valf(0, false)) > 10) {
-  //    _errval = _errval | MCURRSENSERR;
-  //
+// // Check sensor values.
 
 
+// if (abs(ang.val(0)) > 120.0) {
+//   _errval = _errval | ANGSENSERR;
+// }
+// //  if (abs(angvel.valf(0, false)) > 500.) {
+// //    _errval = _errval | VELSENSERR;
+// //  }
+// //  if (abs(torque.valf(0, false)) > 4.0) {
+// //    _errval = _errval | TORQSENSERR;
+// //  }
+// //  if (abs(mcurr.valf(0, false)) > 10) {
+// //    _errval = _errval | MCURRSENSERR;
+// //
 
-  // Update error status
-  if (_errval != 0) {
-    sendPWMToMotor(0);
-    error = YESERR;
-  }
 
-  // Update error values
-  errorval[0] = _errval & 0x00FF;
-  errorval[1] = (_errval >> 8) & 0x00FF;
-}
+
+// // Update error status
+// if (_errval != 0) {
+//   sendPWMToMotor(0);
+//   error = YESERR;
+// }
+
+// // Update error values
+// errorval[0] = _errval & 0x00FF;
+// errorval[1] = (_errval >> 8) & 0x00FF;
+// }
 
 // void startCalibMode() {
 //     ctrlType = CALIBRATION;

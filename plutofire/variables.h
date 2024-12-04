@@ -45,7 +45,8 @@
 #define SET_DIAGNOSTICS     0x06
 #define SET_CONTROL_BOUND   0x07
 #define RESET_PACKETNO      0x08
-#define SET_CONTROL_DIR     0x09   
+#define SET_CONTROL_DIR     0x09
+#define HEARTBEAT           0x80
 
 // Control Law Related Definitions
 #define INVALID_TARGET      999.0
@@ -55,15 +56,10 @@
 #define MAXPWM              3686    // 90% of 4095
 #define MAXDELPWM           40      // Changed from 5
 
-// Error types
+// Error types 
 #define ANGSENSERR          0x0001
-#define VELSENSERR          0x0002
-#define TORQSENSERR         0x0004
-#define MCURRSENSERR        0x0008
-
-// Operation status
-#define NOERR               0x00
-#define YESERR              0x01
+#define MCURRSENSERR        0x0002
+#define NOHEARTBEAT         0x0004
 
 // Kinematic calib status
 #define NOCALIB             0x00
@@ -93,6 +89,9 @@
 #define MECHANICAL_CONST    0.231 //for 48v 0.231; // for 24V 0.077;
 #define MAX_CURRENT         8
 
+// Heart beat related variable
+#define MAX_HBEAT_INTERVAL  1.0 // Seconds
+
 // Actuated device?
 byte isActuated;
 
@@ -100,6 +99,9 @@ byte isActuated;
 const char* fwVersion = "24.12";
 const char* deviceId  = "PLUTO240725";
 const char* compileDate = __DATE__ " " __TIME__;
+
+// Last received heartbeat time.
+float lastRxdHeartbeat = 0.0f;
 
 // ofset angle
 int encOffsetCount = 0;
@@ -136,8 +138,8 @@ byte streamType = SENSORSTREAM;
 bool stream = true;
 byte ctrlType = NONE;
 byte calib = NOCALIB;
-byte error = NOERR;
-byte errorval[] = {0x00, 0x00};
+uint16union_t deviceError;
+// byte errorval[] = {0x00, 0x00};
 
 // Serial Reader object
 SerialReader serReader;
