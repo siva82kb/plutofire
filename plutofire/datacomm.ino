@@ -31,7 +31,10 @@ void readHandleIncomingMessage() {
       case SET_CONTROL_TYPE:
         // This can be set only if there is not error.
         if (deviceError.num != 0) break;
-        // No Error
+        // This can only be set if a mechanism is selected, 
+        // and calibration has been done.
+        if ((currMech == NOMECH) || (calib == NOCALIB)) break;
+        // No Error, Mechanism set and calibrated.
         setControlType(_details);
         break;
       case SET_CONTROL_TARGET:

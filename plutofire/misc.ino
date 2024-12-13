@@ -12,6 +12,14 @@ void checkHeartbeat() {
     // No heartbeat received.
     // Setting error flag.
     deviceError.num |= NOHEARTBEAT;
+  }
+}
+
+/*
+ * Handles errors
+ */
+void handleErrors() {
+  if (deviceError.num != 0) {
     setControlType(NONE);
   }
 }

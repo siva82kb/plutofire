@@ -68,15 +68,16 @@ void loop() {
   // Read and update sensor values.
   updateSensorData();
 
+  // Handle errors.
+  handleErrors();
+
   // Send sensordata
   if (stream) {
     writeSensorStream();
   }
 
   // Update control
-  if (deviceError.num == 0) {
-    updateControlLaw();
-  }
+  updateControlLaw();
 
   // Relax. You only need to work at around 200Hz
   delay(2);

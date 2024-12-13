@@ -33,18 +33,26 @@ void updateControlLaw() {
   float _currI = 0.0;
   float _currPWM = 0.0;
   float _prevPWM = control.val(0);
+  bool _motorEnabled = true;
   // float ffCurr = 0.0;
   // float ffPWM = 0.0;
   // float _delPWMSign;
   // If control is NONE. Switch off control and move on.
-  if (ctrlType == NONE) {
-    // Switch off controller.
-    digitalWrite(ENABLE, LOW);
-    control.add(0.0);
-    return;
-  }
+  // if (ctrlType == NONE) {
+  //   // Switch off controller.
+  //   digitalWrite(ENABLE, LOW);
+  //   control.add(0.0);
+  //   return;
+  // }
   // Else we need to take the appropriate action.
   switch (ctrlType) {
+    case NONE:
+      // Check control can be disabled.
+      if (_prevPWM == 0) {
+        digitalWrite(ENABLE, LOW);
+        _motorEnabled = false;
+      }
+      break;
     case POSITION:
       // Position control.
       _currI = controlPosition();
@@ -73,7 +81,9 @@ void updateControlLaw() {
   // Clip PWM value
   _currPWM = min(MAXPWM, max(-MAXPWM, _currPWM));
   // Send PWM value to motor controller & update control.
-  sendPWMToMotor(_currPWM);
+  if (_motorEnabled) {
+    sendPWMToMotor(_currPWM);
+  }
   control.add(_currPWM);
 }
 
