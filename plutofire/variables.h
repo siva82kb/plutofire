@@ -24,7 +24,7 @@
 #define NOMECH              0x00
 #define WFE                 0x01
 #define WUD                 0x02
-#define WPS                 0x03
+#define FPS                 0x03
 #define HOC                 0x04
 #define FME1                0x05
 #define FME2                0x06
