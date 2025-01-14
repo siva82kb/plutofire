@@ -92,6 +92,17 @@
 // Heart beat related variable
 #define MAX_HBEAT_INTERVAL  1.0 // Seconds
 
+// Mechanism range.
+const float mechOffsetValue[] = { 
+  0,    // Dummy. No mechanism 
+  68,   // Wrist Flexion/Extension     
+  68,   // Wrist Ulnar/Radial Deviation
+  90,   // Forearm Prono/Sunpination
+  0,    // Hand Opening/Closing
+  0,    // Functional mechanism 1
+  0,    // Functional mechanism 2
+};
+
 // Actuated device?
 byte isActuated;
 

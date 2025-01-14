@@ -71,7 +71,7 @@ void readHandleIncomingMessage() {
         }
         break;
       case CALIBRATE:
-        // This can be set only if there is no error.
+        // This can be set only if there is not error.
         if (deviceError.num != 0) break;
         // No Error
         // Reset calibration
@@ -81,7 +81,7 @@ void readHandleIncomingMessage() {
         if (currMech != NOMECH) {
           // Set the encoder offset value
           encOffsetCount = plutoEncoder.read();
-          calib =   ;
+          calib = YESCALIB;
         }
         break;
       case GET_VERSION:
