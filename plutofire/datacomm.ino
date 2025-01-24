@@ -83,6 +83,19 @@ void readHandleIncomingMessage() {
           encOffsetCount = plutoEncoder.read();
           calib = YESCALIB;
         }
+        // Reset the AROM and PROM values.
+        aRom[0] = 0;
+        aRom[1] = 0;
+        pRom[0] = 0;
+        pRom[1] = 0;
+        break;
+      case SET_APROM:
+        setAPRom(serReader.payload, 1);
+        break;
+      case GET_APROM:
+        stream = false;
+        // Send the APRom data.
+        sendAPRomDetails();
         break;
       case GET_VERSION:
         stream = false;
@@ -231,6 +244,54 @@ void sendVersionDetails() {
     bt.write(compileDate[i]);
     chksum += compileDate[i];
   }
+  // Send Checksum
+  bt.write(chksum);
+  bt.flush();
+}
+
+void sendAPRomDetails() {
+  // Format:
+  // 255 | 255 | No. of bytes | Status | Error Val 1 | Error Val 2 | ...
+  // [Current Mechanism][isActuated] | Payload | Chksum
+  byte header[] = { 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  byte chksum = 0xFE;
+  byte _temp;
+
+  // Send packet.
+  header[2] = (4                      // Four headers
+               + 1                    // Current mechanism
+               + 16                   // 4 float for the AROM and PROM
+               + 1                    // Checksum
+  );
+  header[3] = getProgramStatus(APROM);
+  header[4] = deviceError.bytes[0];
+  header[5] = deviceError.bytes[1];
+  header[6] = getMechActType();
+  chksum += header[2] + header[3] + header[4] + header[5] + header[6];
+
+  // Update APRom data
+  outPayload.newPacket();
+  outPayload.add(aRom[0]);
+  outPayload.add(aRom[1]);
+  outPayload.add(pRom[0]);
+  outPayload.add(pRom[1]);
+
+  // Send the header.
+  bt.write(header[0]);
+  bt.write(header[1]);
+  bt.write(header[2]);
+  bt.write(header[3]);
+  bt.write(header[4]);
+  bt.write(header[5]);
+  bt.write(header[6]);
+
+  // Send the payload with the floats first
+  for (int i = 0; i < outPayload.sz() * 4; i++) {
+    _temp = outPayload.getByte(i);
+    bt.write(_temp);
+    chksum += _temp;
+  }
+
   // Send Checksum
   bt.write(chksum);
   bt.flush();

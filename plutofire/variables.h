@@ -34,6 +34,7 @@
 #define CONTROLPARAM        0x01
 #define DIAGNOSTICS         0x02
 #define VERSION             0x03
+#define APROM               0x04
 
 // In data type
 #define GET_VERSION         0x00
@@ -46,6 +47,8 @@
 #define SET_CONTROL_BOUND   0x07
 #define RESET_PACKETNO      0x08
 #define SET_CONTROL_DIR     0x09
+#define SET_APROM           0x0A
+#define GET_APROM           0x0B
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -92,12 +95,21 @@
 // Heart beat related variable
 #define MAX_HBEAT_INTERVAL  1.0 // Seconds
 
-// Mechanism range.
+// Mechanism offset and range.
 const float mechOffsetValue[] = { 
   0,    // Dummy. No mechanism 
   68,   // Wrist Flexion/Extension     
   68,   // Wrist Ulnar/Radial Deviation
   90,   // Forearm Prono/Sunpination
+  0,    // Hand Opening/Closing
+  0,    // Functional mechanism 1
+  0,    // Functional mechanism 2
+};
+const float mechRangeValue[] = { 
+  0,     // Dummy. No mechanism 
+  136,   // Wrist Flexion/Extension     
+  136,   // Wrist Ulnar/Radial Deviation
+  180,   // Forearm Prono/Sunpination
   0,    // Hand Opening/Closing
   0,    // Functional mechanism 1
   0,    // Functional mechanism 2
@@ -143,6 +155,10 @@ ulongunion_t runTime;
 
 // Mechanism
 byte currMech = NOMECH;
+
+// AROM and PROM of the current mechanism.
+float aRom[2] = { 0, 0 };
+float pRom[2] = { 0, 0 };
 
 // Program status
 byte streamType = SENSORSTREAM;

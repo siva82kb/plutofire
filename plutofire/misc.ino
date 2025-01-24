@@ -36,7 +36,7 @@ void _assignFloatUnionBytes(int inx, byte* bytes, floatunion_t* temp) {
 float readEncoderAngle() {
   long newPosition = plutoEncoder.read() - encOffsetCount;
   if (isActuated) {
-    return (360.0 * newPosition / (enPPRActuated * 4));
+    return (360.0 * newPosition / (enPPRActuated * 4)) - mechOffsetValue[currMech];
   }
   return ((360.0 * newPosition / (enPPRnonActuated)));
 }
@@ -65,7 +65,7 @@ void readPlutoButtonState(void) {
  */
 void updateSensorData(void) {
   // Read the motor encoder
-  ang.add(readEncoderAngle() - mechOffsetValue[currMech]);
+  ang.add(readEncoderAngle());
 
   // Estimated torque from the motor current
   //   torque_est = (analogRead(MOTORCURR) * MCURRGAIN - maxCurrent) * mechnicalConstant;
@@ -186,6 +186,40 @@ void setTarget(byte* payload, int strtInx, byte ctrl) {
   } else {
     target.add(INVALID_TARGET);
   }
+}
+
+// Set APRom.
+void setAPRom(byte* payload, int strtInx) {
+  floatunion_t _arom1;
+  _assignFloatUnionBytes(strtInx, payload, &_arom1);
+  floatunion_t _arom2;
+  _assignFloatUnionBytes(strtInx + 4, payload, &_arom2);
+  floatunion_t _prom1;
+  _assignFloatUnionBytes(strtInx + 8, payload, &_prom1);
+  floatunion_t _prom2;
+  _assignFloatUnionBytes(strtInx + 12, payload, &_prom2);
+  // Ensure the values are appropriate.
+  // Make sure the AROM- is not less than the -ve of the offset,
+  // and that the PROM- value is less than or equal to AROM-.
+  if ((_arom1.num < - mechOffsetValue[currMech]) ||
+      (_prom1.num < - mechOffsetValue[currMech]) ||
+      (_arom1.num < _prom1.num)) 
+  {
+    return;
+  }
+  // Make sure the AROM+ is not less than the range minus the offset,
+  // and that the PROM+ value is greater than or equal to AROM+.
+  if((_arom2.num > (mechRangeValue[currMech] - mechOffsetValue[currMech])) ||
+     (_prom2.num > (mechRangeValue[currMech] - mechOffsetValue[currMech])) ||
+     (_arom2.num > _prom2.num))
+  {
+    return;
+  }
+  // Assign AROM and PROM values.
+  aRom[0] = _arom1.num;
+  aRom[1] = _arom2.num;
+  pRom[0] = _prom1.num;
+  pRom[1] = _prom2.num;
 }
 
 // // Set torque target
