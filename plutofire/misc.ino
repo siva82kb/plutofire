@@ -220,6 +220,15 @@ void setAPRom(byte* payload, int strtInx) {
   aRom[1] = _arom2.num;
   pRom[0] = _prom1.num;
   pRom[1] = _prom2.num;
+
+  SerialUSB.print(aRom[0]);
+  SerialUSB.print(" ");
+  SerialUSB.print(aRom[1]);
+  SerialUSB.print(" ");
+  SerialUSB.print(pRom[0]);
+  SerialUSB.print(" ");
+  SerialUSB.print(pRom[1]);
+  SerialUSB.print("\n");
 }
 
 // // Set torque target

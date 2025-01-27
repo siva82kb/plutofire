@@ -259,7 +259,6 @@ void sendAPRomDetails() {
 
   // Send packet.
   header[2] = (4                      // Four headers
-               + 1                    // Current mechanism
                + 16                   // 4 float for the AROM and PROM
                + 1                    // Checksum
   );
