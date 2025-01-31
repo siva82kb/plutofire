@@ -153,8 +153,6 @@ byte getMechActType(void) {
 // }
 
 
-
-
 // Update the controller parameters
 void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
   int inx = strtInx;
@@ -182,9 +180,9 @@ void setTarget(byte* payload, int strtInx, byte ctrl) {
   floatunion_t temp;
   _assignFloatUnionBytes(inx, payload, &temp);
   if ((ctrl == POSITION) || (ctrl == POSITIONAAN) || (ctrl == TORQUE)) {
-    target.add(temp.num);
+    target = temp.num;
   } else {
-    target.add(INVALID_TARGET);
+    target = INVALID_TARGET;
   }
 }
 
@@ -220,15 +218,33 @@ void setAPRom(byte* payload, int strtInx) {
   aRom[1] = _arom2.num;
   pRom[0] = _prom1.num;
   pRom[1] = _prom2.num;
+}
 
-  SerialUSB.print(aRom[0]);
-  SerialUSB.print(" ");
-  SerialUSB.print(aRom[1]);
-  SerialUSB.print(" ");
-  SerialUSB.print(pRom[0]);
-  SerialUSB.print(" ");
-  SerialUSB.print(pRom[1]);
-  SerialUSB.print("\n");
+// Generating smooth desired positions from the target.
+float generateSmoothDesiredPosition(float x0) {
+  static float ypast[] = { 0.0f, 0.0f };
+  static float xpast[] = { 0.0f, 0.0f };
+  // Check if the input is INVALID_TARGET
+  if (x0 == INVALID_TARGET) {
+    ypast[0] = 0;
+    ypast[1] = 0;
+    xpast[0] = 0;
+    xpast[1] = 0;
+    return INVALID_TARGET;
+  }
+  // Compute output.
+  float _out = (b_filt[0] * x0
+                + b_filt[1] * xpast[0]
+                + b_filt[2] * xpast[1]
+                - a_filt[1] * ypast[0]
+                - a_filt[2] * ypast[1]);
+  _out *= K_filt;
+  // Update memory
+  ypast[1] = ypast[0];
+  ypast[0] = _out;
+  xpast[1] = xpast[0];
+  xpast[0] = x0;
+  return _out;
 }
 
 // // Set torque target

@@ -119,8 +119,8 @@ const float mechRangeValue[] = {
 byte isActuated;
 
 // Version and device ID.
-const char* fwVersion = "24.12";
-const char* deviceId  = "PLUTO240725";
+const char* fwVersion = "25.01";
+const char* deviceId  = "PLUTO250130";
 const char* compileDate = __DATE__ " " __TIME__;
 
 // Last received heartbeat time.
@@ -135,7 +135,11 @@ int enPPRnonActuated = 4096 ;
 Buffer ang;
 Buffer torque;
 Buffer control;
-Buffer target;
+Buffer desired;
+// Target is set once and this is used to derive the desired value.
+// All controllers that require a desired position will need to use 
+// the data from the desired buffer.
+float target;
 
 // Additional buffers
 Buffer err;
@@ -155,10 +159,6 @@ ulongunion_t runTime;
 
 // Mechanism
 byte currMech = NOMECH;
-
-// AROM and PROM of the current mechanism.
-float aRom[2] = { 0, 0 };
-float pRom[2] = { 0, 0 };
 
 // Program status
 byte streamType = SENSORSTREAM;
@@ -195,6 +195,21 @@ float kd = -1;
 float km = -1;
 float tor;
 float neutral_ang;
+
+// Desired target generator filter for PositionAAN.
+// Filter gain
+const float K_filt = 1.0 / 7139.0;
+const float b_filt[] = { 1.0, 2.0, 1.0 }; 
+const float a_filt[] = { 7139.0, -13776.0, 6641.0 };
+
+// HOMER Assist-As-Needed Control parameters
+// AROM limit.
+float bndryDelta = 0.0;
+ 
+// AROM and PROM of the current mechanism.
+float aRom[2] = { 0, 0 };
+float pRom[2] = { 0, 0 };
+
 
 /* Tempoary section : To be formated later */
 Bounce bounce = Bounce();

@@ -88,9 +88,21 @@ void readHandleIncomingMessage() {
         aRom[1] = 0;
         pRom[0] = 0;
         pRom[1] = 0;
+        // Send the APRom data.
+        sendAPRomDetails();
         break;
       case SET_APROM:
-        setAPRom(serReader.payload, 1);
+        // You can set APROM only when the control type is NONE
+        // and the mechanism is not NOMECH.
+        if ((currMech != NOMECH) && (ctrlType != POSITIONAAN)) {
+          setAPRom(serReader.payload, 1);
+        } else {
+          // Reset the AROM and PROM values.
+          aRom[0] = 0;
+          aRom[1] = 0;
+          pRom[0] = 0;
+          pRom[1] = 0;
+        }
         break;
       case GET_APROM:
         stream = false;
@@ -123,7 +135,8 @@ void writeSensorStream() {
   outPayload.add(ang.val(0));
   outPayload.add(0);
   outPayload.add(control.val(0));
-  outPayload.add(target.val(0));
+  outPayload.add(target);
+  outPayload.add(desired.val(0));
 
   // Add additional data if in DIAGNOSTICS mode
   if (streamType == DIAGNOSTICS) {
@@ -314,11 +327,11 @@ void sendControlParameters(byte ctype) {
     //   break;
     case POSITION:
       // outPayload.add(pcKp);
-      outPayload.add(target.val(0));
+      outPayload.add(target);
       break;
     case TORQUE:
       // outPayload.add(tcKp);
-      outPayload.add(target.val(0));
+      outPayload.add(target);
       break;
   }
 

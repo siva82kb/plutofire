@@ -42,7 +42,8 @@ void setup() {
   currMech = NOMECH;
 
   // Set targets to invalid value 999.
-  target.add(INVALID_TARGET);
+  target = INVALID_TARGET;
+  desired.add(INVALID_TARGET);
 
   // Initialize variable.
   streamType = SENSORSTREAM;
