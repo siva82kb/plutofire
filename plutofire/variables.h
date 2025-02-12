@@ -34,7 +34,6 @@
 #define CONTROLPARAM        0x01
 #define DIAGNOSTICS         0x02
 #define VERSION             0x03
-#define APROM               0x04
 
 // In data type
 #define GET_VERSION         0x00
@@ -48,7 +47,6 @@
 #define RESET_PACKETNO      0x08
 #define SET_CONTROL_DIR     0x09
 #define SET_APROM           0x0A
-#define GET_APROM           0x0B
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -186,7 +184,7 @@ int8_t ctrlDir = 0;
 
 // Defining the mechanism dependent controller gains
 const float mechKp[] = { 0.1, 0.1, 0.1, 0.1 };
-const float mechKd[] = { 0.01, 0.01, 0.01, 0.01 };
+const float mechKd[] = { 0.01, 0.01, 0.01, 0.01 };  
 const float mechKi[] = { 0.001, 0.001, 0.001, 0.001 };
 
 // Resistance control
@@ -204,13 +202,11 @@ const float a_filt[] = { 7139.0, -13776.0, 6641.0 };
 
 // HOMER Assist-As-Needed Control parameters
 // AROM limit.
-float bndryDelta = 0.0;
+float  bndryDelta = 10.0;
  
 // AROM and PROM of the current mechanism.
-float aRom[2] = { 0, 0 };
-float pRom[2] = { 0, 0 };
-
-
+int8_t aRom[2] = { 0, 0 };
+int8_t pRom[2] = { 0, 0 }; 
 /* Tempoary section : To be formated later */
 Bounce bounce = Bounce();
 

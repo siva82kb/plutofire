@@ -11,10 +11,26 @@ float getAssistanceSupportForTarget(float currAng, float currTarget) {
   // Invalid targets get zero support.
   if (target == INVALID_TARGET) return 0.0;
   // Valid tatget.
-  if (currTarget <= aRom[0]) {
-    return g(- (currAng - aRom[0] - bndryDelta) / bndryDelta); 
-  } else if (currTarget >= aRom[1]) {
-    return g((currAng - aRom[1] + bndryDelta) / bndryDelta);
+  if (currTarget <= 1.0 * aRom[0]) {
+    SerialUSB.print(currAng);
+    SerialUSB.print(", ");
+    SerialUSB.print(aRom[0]);
+    SerialUSB.print(", ");
+    SerialUSB.print(bndryDelta);
+    SerialUSB.print(", ");
+    SerialUSB.print(- (currAng - 1.0 * aRom[0] - bndryDelta) / bndryDelta);
+    SerialUSB.print("\n");
+    return g(- (currAng - 1.0 * aRom[0] - bndryDelta) / bndryDelta);
+  } else if (currTarget >= 1.0 * aRom[1]) {
+    SerialUSB.print(currAng);
+    SerialUSB.print(", ");
+    SerialUSB.print(aRom[1]);
+    SerialUSB.print(", ");
+    SerialUSB.print(bndryDelta);
+    SerialUSB.print(", ");
+    SerialUSB.print((currAng - 1.0 * aRom[1] + bndryDelta) / bndryDelta);
+    SerialUSB.print("\n");
+    return g((currAng - 1.0 * aRom[1] + bndryDelta) / bndryDelta);
   }
   return 0.0;
 }

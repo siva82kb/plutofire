@@ -81,6 +81,12 @@ void updateControlLaw() {
       } else {
         desired.add((1 - _alpha) * ang.val(0) + _alpha * target);
       }
+      SerialUSB.print(_alpha);
+      SerialUSB.print(", ");
+      SerialUSB.print(target);
+      SerialUSB.print(", ");
+      SerialUSB.print(desired.val(0));
+      SerialUSB.print("\n");
       // Position control.
       _currI = _alpha * controlPositionAAN();
       _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
