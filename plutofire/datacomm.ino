@@ -41,16 +41,15 @@ void readHandleIncomingMessage() {
         // This can be set only if there is not error.
         if (deviceError.num != 0) break;
         // No Error
-        // Check if the current control type is POSITION.
+        // Check if the current control type is POSITION or TORQUE.
         if ((ctrlType == POSITION)
-            || (ctrlType == POSITIONAAN)
             || (ctrlType == TORQUE)) {
           // Set target.
           setTarget(serReader.payload, 1, ctrlType);
         }
         break;
       case SET_CONTROL_BOUND:
-        // This can be set only if there is not error.
+        // This can be set only if there is no error.
         if (deviceError.num != 0) break;
         // No Error
         // Check if the current control type is POSITION.
@@ -70,8 +69,28 @@ void readHandleIncomingMessage() {
           ctrlDir = _details;
         }
         break;
+      case SET_AAN_TARGET:
+        // This can be set only if there is no error.
+        if (deviceError.num != 0) break;
+        // No Error.
+        if (ctrlType != POSITIONAAN) break;
+        // Set AAN Target.
+        setAANTarget(serReader.payload, 1);
+        // Initial time.
+        initTime = runTime.num;
+        SerialUSB.print(strtPos);
+        SerialUSB.print(",");
+        SerialUSB.print(strtTime);
+        SerialUSB.print(",");
+        SerialUSB.print(target);
+        SerialUSB.print(",");
+        SerialUSB.print(reachDur);
+        SerialUSB.print(",");
+        SerialUSB.print(initTime);
+        SerialUSB.print("\n");
+        break;
       case CALIBRATE:
-        // This can be set only if there is not error.
+        // This can be set only if there is no error.
         if (deviceError.num != 0) break;
         // No Error
         // Reset calibration
@@ -83,27 +102,6 @@ void readHandleIncomingMessage() {
           encOffsetCount = plutoEncoder.read();
           calib = YESCALIB;
         }
-        // Reset the AROM and PROM values.
-        aRom[0] = 0;
-        aRom[1] = 0;
-        pRom[0] = 0;
-        pRom[1] = 0;
-        break;
-      case SET_APROM:
-        // You can set APROM only when the control type is NONE
-        // and the mechanism is not NOMECH.
-        if ((currMech != NOMECH) && (ctrlType == NONE)) {
-          aRom[0] = serReader.payload[1];
-          aRom[1] = serReader.payload[2];
-          pRom[0] = serReader.payload[3];
-          pRom[1] = serReader.payload[4];
-        } else {
-          // Reset the AROM and PROM values.
-          aRom[0] = 0;
-          aRom[1] = 0;
-          pRom[0] = 0;
-          pRom[1] = 0;
-        }
         break;
       case GET_VERSION:
         stream = false;
@@ -112,6 +110,11 @@ void readHandleIncomingMessage() {
         break;
       case HEARTBEAT:
         lastRxdHeartbeat = millis();
+        break;
+      case RESET_PACKETNO:
+        packetNumber.num = 0;
+        startTime = millis();
+        runTime.num = 0;
         break;
     }
     serReader.payloadHandled();
@@ -145,7 +148,6 @@ void writeSensorStream() {
   header[2] = (4                      // Four headers
                + 2                    // Packet number int16
                + 4                    // Run time
-               + 4                    // APRom values
                + outPayload.sz() * 4  // Float sensor data
                + 1                    // Control bound data
                + 1                    // Control direction data
@@ -178,16 +180,6 @@ void writeSensorStream() {
     bt.write(runTime.bytes[i]);
     chksum += runTime.bytes[i];
   }
-
-  // Send APRom values.
-  bt.write(aRom[0]);
-  chksum += aRom[0];
-  bt.write(aRom[1]);
-  chksum += aRom[1];
-  bt.write(pRom[0]);
-  chksum += pRom[0];
-  bt.write(pRom[1]);
-  chksum += pRom[1];
 
   // Send the payload with the floats first
   for (int i = 0; i < outPayload.sz() * 4; i++) {

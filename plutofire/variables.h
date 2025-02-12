@@ -46,7 +46,7 @@
 #define SET_CONTROL_BOUND   0x07
 #define RESET_PACKETNO      0x08
 #define SET_CONTROL_DIR     0x09
-#define SET_APROM           0x0A
+#define SET_AAN_TARGET      0x0A
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -200,13 +200,12 @@ const float K_filt = 1.0 / 7139.0;
 const float b_filt[] = { 1.0, 2.0, 1.0 }; 
 const float a_filt[] = { 7139.0, -13776.0, 6641.0 };
 
-// HOMER Assist-As-Needed Control parameters
-// AROM limit.
-float  bndryDelta = 10.0;
- 
-// AROM and PROM of the current mechanism.
-int8_t aRom[2] = { 0, 0 };
-int8_t pRom[2] = { 0, 0 }; 
+// HOMER Assist-As-Needed trajectory parameters
+float strtPos;
+float strtTime;
+float initTime;
+float reachDur;
+
 /* Tempoary section : To be formated later */
 Bounce bounce = Bounce();
 

@@ -11,13 +11,7 @@ void setControlType(byte ctype) {
   // Check if there is a change in control mode.
   if (ctrlType != ctype) {
     // Change control mode.
-    // Check if APROM is set to a valid value. Else,
-    // we cannot set POSTIONAAN controler type.
-    if ((ctype == POSITIONAAN) && (aRom[0] == 0) && (aRom[1] == 0) && (pRom[0] == 0) && (pRom[1] == 0)) {
-      ctrlType = NONE; 
-    } else {
-      ctrlType = ctype;
-    }
+    ctrlType = ctype;
     // Initial control bound is set to zero.
     ctrlBound = 0.0;
     // Set control direction.
