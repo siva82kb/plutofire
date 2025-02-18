@@ -77,7 +77,7 @@ void readHandleIncomingMessage() {
         // Set AAN Target.
         setAANTarget(serReader.payload, 1);
         // Initial time.
-        initTime = runTime.num;
+        initTime = runTime.num / 1000.0f + strtTime;
         SerialUSB.print(strtPos);
         SerialUSB.print(",");
         SerialUSB.print(strtTime);

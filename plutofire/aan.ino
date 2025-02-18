@@ -46,3 +46,10 @@ float mjt(float t) {
   t = t < 0 ? 0.0 : t;
   return 6.0 * pow(t, 5) - 15.0 * pow(t, 4) + 10 * pow(t, 3);
 }
+
+// Compute the AAN desired trajectory.
+float getAANDesiredTrajectory() {
+  if (target == INVALID_TARGET) return ang.val(0);
+  float _t = runTime.num / 1000.0f;
+  return strtPos + (target - strtPos) * mjt((_t - initTime) / reachDur);
+}

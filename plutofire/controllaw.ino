@@ -69,21 +69,11 @@ void updateControlLaw() {
       break;
     case POSITIONAAN:
       // Check if its an invalid target
-      _alpha = getAssistanceSupportForTarget(ang.val(0), target);
-      if (target == INVALID_TARGET) {
-        desired.add(INVALID_TARGET);
-      } else {
-        desired.add((1 - _alpha) * ang.val(0) + _alpha * target);
-      }
-      SerialUSB.print(_alpha);
-      SerialUSB.print(", ");
-      SerialUSB.print(target);
-      SerialUSB.print(", ");
-      SerialUSB.print(desired.val(0));
-      SerialUSB.print("\n");
-      // Position control.
-      _currI = _alpha * controlPositionAAN();
-      _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
+      desired.add(getAANDesiredTrajectory());
+      SerialUSB.println(desired.val(0));
+      // // Position control.
+      // _currI = _alpha * controlPositionAAN();
+      // _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
       break;
     case TORQUE:
       // Feedfoward torque control.
