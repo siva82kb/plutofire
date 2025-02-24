@@ -154,15 +154,19 @@ float controlPositionAAN() {
   // Update error related information.
   // Current error
   _currerr = _currtgt - _currang;
+  // Previous error
+  _preverr = (_prevtgt != INVALID_TARGET) ? _prevtgt - _prevang : _currerr;
+  
   // Ignore small errors.
-  _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? 0.0 : _currerr;
+  // _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? 0.0 : _currerr;
+  _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? pow(_currerr / POS_CTRL_DBAND, 3) : _currerr;
   // Proportional control term.
   _currp = (ctrlDir * _currerr >= 0) ? pcKp * (_currerr) : 0.0;
 
-  // Previous error
-  _preverr = (_prevtgt != INVALID_TARGET) ? _prevtgt - _prevang : _currerr;
-  // Derivate control term.
-  _currd = (ctrlDir * _currerr >= 0) ? pcKd * (_currerr - _preverr) : 0.0;
+  // Derivate control term.`
+  // The Derivative gait is reduced when the error is below the position control deadband.
+  float _kdgain = linclip(abs(_currerr / POS_CTRL_DBAND));
+  _currd = (ctrlDir * _currerr >= 0) ? pcKd * _kdgain * (_currerr - _preverr) : 0.0;
 
   // Error sum.
   _errsum = 0.9999 * _errsum + _currerr;
