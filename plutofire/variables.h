@@ -47,6 +47,7 @@
 #define RESET_PACKETNO      0x08
 #define SET_CONTROL_DIR     0x09
 #define SET_AAN_TARGET      0x0A
+#define RESET_AAN_TARGET    0x0B
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -92,6 +93,12 @@
 
 // Heart beat related variable
 #define MAX_HBEAT_INTERVAL  1.0 // Seconds
+
+// Some useful function
+#define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
+
+// Nonlinear PID controller functions.
+#define linclip(x) ((x) < 0 ? 0 : ((x) > 1 ? 1 : x))
 
 // Mechanism offset and range.
 const float mechOffsetValue[] = { 

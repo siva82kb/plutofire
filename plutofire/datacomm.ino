@@ -76,6 +76,8 @@ void readHandleIncomingMessage() {
         if (ctrlType != POSITIONAAN) break;
         // Set AAN Target.
         setAANTarget(serReader.payload, 1);
+        // Set Control Direction.
+        ctrlDir = target >= strtPos ? +1 : -1;
         // Initial time.
         initTime = runTime.num / 1000.0f + strtTime;
         SerialUSB.print(strtPos);
@@ -88,6 +90,10 @@ void readHandleIncomingMessage() {
         SerialUSB.print(",");
         SerialUSB.print(initTime);
         SerialUSB.print("\n");
+        break;
+      case RESET_AAN_TARGET:
+        target = INVALID_TARGET;
+        ctrlDir = 0;
         break;
       case CALIBRATE:
         // This can be set only if there is no error.
