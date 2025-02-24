@@ -92,6 +92,9 @@
 // Heart beat related variable
 #define MAX_HBEAT_INTERVAL  1.0 // Seconds
 
+// Nonlinear PID controller functions.
+#define linclip(x) ((x) < 0 ? 0 : ((x) > 1 ? 1 : x))
+
 // Actuated device?
 byte isActuated;
 
