@@ -99,7 +99,7 @@
 byte isActuated;
 
 // Version and device ID.
-const char* fwVersion = "24.12";
+const char* fwVersion = "25.02trs";
 const char* deviceId  = "PLUTO240725";
 const char* compileDate = __DATE__ " " __TIME__;
 
