@@ -70,6 +70,10 @@ void readHandleIncomingMessage() {
           ctrlDir = _details;
         }
         break;
+      case SET_AAN_TARGET:
+        break;
+      case RESET_AAN_TARGET:
+        break;
       case CALIBRATE:
         // This can be set only if there is not error.
         if (deviceError.num != 0) break;
@@ -93,6 +97,9 @@ void readHandleIncomingMessage() {
         lastRxdHeartbeat = millis();
         break;
     }
+    // Update recent command.
+    recentCommand = serReader.payload[0];
+    recentPackNo.num = packetNumber.num;
     serReader.payloadHandled();
   }
 }

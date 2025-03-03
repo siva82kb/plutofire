@@ -46,6 +46,8 @@
 #define SET_CONTROL_BOUND   0x07
 #define RESET_PACKETNO      0x08
 #define SET_CONTROL_DIR     0x09
+#define SET_AAN_TARGET      0x0A
+#define RESET_AAN_TARGET    0x0B
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -90,7 +92,7 @@
 #define MAX_CURRENT         8
 
 // Heart beat related variable
-#define MAX_HBEAT_INTERVAL  1.0 // Seconds
+#define MAX_HBEAT_INTERVAL  5.0 // Seconds
 
 // Nonlinear PID controller functions.
 #define linclip(x) ((x) < 0 ? 0 : ((x) > 1 ? 1 : x))
@@ -115,7 +117,13 @@ int enPPRnonActuated = 4096 ;
 Buffer ang;
 Buffer torque;
 Buffer control;
-Buffer target;
+Buffer desired;
+// Target is set once and this is used to derive the desired value.
+// All controllers that require a desired position will need to use 
+// the data from the desired buffer.
+float target;
+// Duration of the trajectory to be set when setting an AAN target.
+float reachDuration;
 
 // Additional buffers
 Buffer err;
