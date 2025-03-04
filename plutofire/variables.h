@@ -45,9 +45,8 @@
 #define SET_DIAGNOSTICS     0x06
 #define SET_CONTROL_BOUND   0x07
 #define RESET_PACKETNO      0x08
-#define SET_CONTROL_DIR     0x09
-#define SET_AAN_TARGET      0x0A
-#define RESET_AAN_TARGET    0x0B
+// This is used to automatically set the control direction in the AAN mode.
+#define SET_ROM_MIDPOINT    0x09
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -59,8 +58,9 @@
 #define MAXDELPWM           40      // Changed from 5
 
 // Error types 
-#define ANGSENSERR          0x0001
-#define MCURRSENSERR        0x0002
+#define ANGPOSSENSERR       0x0001
+#define ANGVELSENSERR       0x0002
+#define MCURRSENSERR        0x0003
 #define NOHEARTBEAT         0x0004
 
 // Kinematic calib status
@@ -70,7 +70,11 @@
 // Control related variables
 #define POS_CTRL_DBAND      2
 
-#define IO_SWITCH           17
+// Error thresholds
+#define ABSANGPOSVALUE      180
+#define ABSANGVELVALUE      10 
+
+#define IO_SWITCH           17  
 #define LED_PIN             LED_BUILTIN
 
 #define ACTUATED            21
@@ -91,17 +95,32 @@
 #define MECHANICAL_CONST    0.231 //for 48v 0.231; // for 24V 0.077;
 #define MAX_CURRENT         8
 
+// Control bound transition time
+#define CTRL_BOUND_DUR      1.0f
+
 // Heart beat related variable
 #define MAX_HBEAT_INTERVAL  5.0 // Seconds
 
 // Nonlinear PID controller functions.
 #define linclip(x) ((x) < 0 ? 0 : ((x) > 1 ? 1 : x))
 
+// Some useful function
+#define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
+
+const float mechRangeValue[] = { 
+  0,     // Dummy. No mechanism 
+  136,   // Wrist Flexion/Extension     
+  136,   // Wrist Ulnar/Radial Deviation
+  180,   // Forearm Prono/Sunpination
+  93,    // Hand Opening/Closing
+};
+
+
 // Actuated device?
 byte isActuated;
 
 // Version and device ID.
-const char* fwVersion = "25.02trs";
+const char* fwVersion = "25.03trs";
 const char* deviceId  = "PLUTO240725";
 const char* compileDate = __DATE__ " " __TIME__;
 
@@ -122,8 +141,14 @@ Buffer desired;
 // All controllers that require a desired position will need to use 
 // the data from the desired buffer.
 float target;
+// Start position
+float startPos;
+// Trajectory start time
+float initTime;
 // Duration of the trajectory to be set when setting an AAN target.
-float reachDuration;
+float reachDur;
+// ROM midpoint.
+int8_t romMidPoint = 0;
 
 // Additional buffers
 Buffer err;
@@ -150,7 +175,6 @@ bool stream = true;
 byte ctrlType = NONE;
 byte calib = NOCALIB;
 uint16union_t deviceError;
-// byte errorval[] = {0x00, 0x00};
 
 // Serial Reader object
 SerialReader serReader;
@@ -165,6 +189,11 @@ float pcKi = 0.001;
 // The parameter to bound the PWM/Current value to within +/- ctrlBound.
 // Its a value between 0 and 1: 0 means < 10% PWM, and 1 means 90% PWM.
 float ctrlBound = 1.0;
+// Variables to change control bound smoothly. Control bounds are 
+// changed smoothly over 1 sec.
+float cbInitValue = 0;
+float cbFinalValue = 0;
+float cbInitTime = 0;
 // Direction variables for assymetric control of assistance.
 int8_t ctrlDir = 0;
 

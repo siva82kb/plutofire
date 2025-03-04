@@ -18,9 +18,9 @@ void setControlType(byte ctype) {
     ctrlDir = 0;
     // Set the target depending on the control mode.
     if (ctrlType == TORQUE) {
-      target.add(0.0);
+      target = 0.0;
     } else {
-      target.add(INVALID_TARGET);
+      target = INVALID_TARGET;
       // Set the contoller gains for the appropriate mechanism.
       setControlParamForMech();
     }
@@ -34,17 +34,12 @@ void updateControlLaw() {
   float _currPWM = 0.0;
   float _prevPWM = control.val(0);
   bool _motorEnabled = true;
-  // float ffCurr = 0.0;
-  // float ffPWM = 0.0;
-  // float _delPWMSign;
-  // If control is NONE. Switch off control and move on.
-  // if (ctrlType == NONE) {
-  //   // Switch off controller.
-  //   digitalWrite(ENABLE, LOW);
-  //   control.add(0.0);
-  //   return;
-  // }
-  // Else we need to take the appropriate action.
+  // Update desired trajectory & control bound if the control is POSITION, POSITIOAAN, or TORQUE.
+  if ((ctrlType == POSITION) || (ctrlType == POSITIONAAN))
+  {
+    desired.add(getDesiredTrajectory());
+    ctrlBound = getControlBound();
+  }
   switch (ctrlType) {
     case NONE:
       // Check control can be disabled.
@@ -59,13 +54,15 @@ void updateControlLaw() {
       _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
       break;
     case POSITIONAAN:
+      // Update control direction
+      ctrlDir = target != INVALID_TARGET ? sgn(target - romMidPoint) : 0;
       // Position control.
       _currI = controlPositionAAN();
       _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
       break;
     case TORQUE:
       // Feedfoward torque control.
-      _currI = target.val(0) / MECHANICAL_CONST;
+      _currI = target / MECHANICAL_CONST;
       _currPWM = convertCurrentToPWM(_currI);
       break;
     case RESIST:
@@ -90,9 +87,9 @@ void updateControlLaw() {
 // Position controller
 float controlPosition() {
   float _currang = ang.val(0);
-  float _currtgt = target.val(0);
+  float _currtgt = desired.val(0);
   float _prevang = ang.val(1);
-  float _prevtgt = target.val(1);
+  float _prevtgt = desired.val(1);
   float _currp, _currd, _curri;
   float _currerr, _preverr;
   float _errsum = errsum.val(0);
@@ -136,9 +133,9 @@ float controlPosition() {
 // Position controller for AAN implementation
 float controlPositionAAN() {
   float _currang = ang.val(0);
-  float _currtgt = target.val(0);
+  float _currtgt = desired.val(0);
   float _prevang = ang.val(1);
-  float _prevtgt = target.val(1);
+  float _prevtgt = desired.val(1);
   float _currp, _currd, _curri;
   float _currerr, _preverr;
   float _errsum = errsum.val(0);
@@ -162,6 +159,11 @@ float controlPositionAAN() {
   _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? pow(_currerr / POS_CTRL_DBAND, 3) : _currerr;
   // Proportional control term.
   _currp = (ctrlDir * _currerr >= 0) ? pcKp * (_currerr) : 0.0;
+  SerialUSB.print(ctrlDir);
+  SerialUSB.print(",");
+  SerialUSB.print(_currerr);
+  SerialUSB.print("\n");
+
 
   // Derivate control term.`
   // The Derivative gait is reduced when the error is below the position control deadband.
@@ -181,6 +183,27 @@ float controlPositionAAN() {
   errsum.add(_curri);
 
   return _currp + _currd + _curri;
+}
+
+// Minimum jerk trajectory function
+float mjt(float t) {
+  t = t > 1 ? 1.0 : t;
+  t = t < 0 ? 0.0 : t;
+  return 6.0 * pow(t, 5) - 15.0 * pow(t, 4) + 10 * pow(t, 3);
+}
+  
+// Compute the desired trajectory.
+float getDesiredTrajectory() {
+  if (target == INVALID_TARGET) return ang.val(0);
+  if (reachDur == 0) return target;
+  float _t = runTime.num / 1000.0f;
+  return startPos + (target - startPos) * mjt((_t - initTime) / reachDur);
+}
+  
+// getControlBound
+float getControlBound() {
+  float _t = runTime.num / 1000.0f;
+  return cbInitValue + (cbFinalValue - cbInitValue) * linclip((_t - cbInitTime) / CTRL_BOUND_DUR);
 }
 
 // Bound the position control output.

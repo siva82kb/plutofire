@@ -47,32 +47,28 @@ void readHandleIncomingMessage() {
             || (ctrlType == TORQUE)) {
           // Set target.
           setTarget(serReader.payload, 1, ctrlType);
+          SerialUSB.print(startPos);
+          SerialUSB.print(",");
+          SerialUSB.print(initTime);
+          SerialUSB.print(",");
+          SerialUSB.print(target);
+          SerialUSB.print(",");
+          SerialUSB.print(reachDur);
+          SerialUSB.print("\n");
         }
         break;
       case SET_CONTROL_BOUND:
         // This can be set only if there is not error.
         if (deviceError.num != 0) break;
         // No Error
-        // Check if the current control type is POSITION.
-        ctrlBound = 0.0;
-        if ((ctrlType == POSITION)
-            || (ctrlType == POSITIONAAN)) {
-          ctrlBound = _details / 255.0;
-        }
+        cbInitValue = ctrlBound;
+        cbInitTime = 0.001f * runTime.num;
+        cbFinalValue = (ctrlType == POSITION  || ctrlType == POSITIONAAN) ? _details / 255.0 : 0.0f;
         break;
-      case SET_CONTROL_DIR:
-        // This can be set only if there is not error.
-        if (deviceError.num != 0) break;
-        // No Error
-        // Check if the current control type is POSITIONAAN.
-        ctrlDir = 0;
-        if (ctrlType == POSITIONAAN) {
-          ctrlDir = _details;
-        }
-        break;
-      case SET_AAN_TARGET:
-        break;
-      case RESET_AAN_TARGET:
+      case SET_ROM_MIDPOINT:
+        // This can be set onle when the control is NONE.
+        if (ctrlType != NONE) break;
+        romMidPoint = _details;
         break;
       case CALIBRATE:
         // This can be set only if there is not error.
@@ -97,9 +93,6 @@ void readHandleIncomingMessage() {
         lastRxdHeartbeat = millis();
         break;
     }
-    // Update recent command.
-    recentCommand = serReader.payload[0];
-    recentPackNo.num = packetNumber.num;
     serReader.payloadHandled();
   }
 }
@@ -115,9 +108,9 @@ void writeSensorStream() {
   // Update Out data Buffer
   outPayload.newPacket();
   outPayload.add(ang.val(0));
-  outPayload.add(0);
   outPayload.add(control.val(0));
-  outPayload.add(target.val(0));
+  outPayload.add(target);
+  outPayload.add(desired.val(0));
 
   // Add additional data if in DIAGNOSTICS mode
   if (streamType == DIAGNOSTICS) {
@@ -133,6 +126,7 @@ void writeSensorStream() {
                + outPayload.sz() * 4  // Float sensor data
                + 1                    // Control bound data
                + 1                    // Control direction data
+               + 1                    // ROM midpoint
                + 1                    // PLUTO button data
                + 1                    // Checksum
   );
@@ -178,6 +172,10 @@ void writeSensorStream() {
   // Send the control direction byte
   bt.write(ctrlDir);
   chksum += ctrlDir;
+
+  // Send the ROM midpoint
+  bt.write(romMidPoint);
+  chksum += romMidPoint;
 
   // Send the PLUTO buttons state byte
   bt.write(plutoButton);
@@ -261,11 +259,11 @@ void sendControlParameters(byte ctype) {
     //   break;
     case POSITION:
       // outPayload.add(pcKp);
-      outPayload.add(target.val(0));
+      outPayload.add(target);
       break;
     case TORQUE:
       // outPayload.add(tcKp);
-      outPayload.add(target.val(0));
+      outPayload.add(target);
       break;
   }
 
