@@ -124,7 +124,7 @@ const float mechRangeValue[] = {
 byte isActuated;
 
 // Version and device ID.
-const char* fwVersion = "25.01";
+const char* fwVersion = "25.03";
 const char* deviceId  = "PLUTO250130";
 const char* compileDate = __DATE__ " " __TIME__;
 
