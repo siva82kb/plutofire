@@ -53,22 +53,14 @@ void readHandleIncomingMessage() {
         // This can be set only if there is not error.
         if (deviceError.num != 0) break;
         // No Error
-        // Check if the current control type is POSITION.
-        ctrlBound = 0.0;
-        if ((ctrlType == POSITION)
-            || (ctrlType == POSITIONAAN)) {
-          ctrlBound = _details / 255.0;
-        }
+        cbInitValue = ctrlBound;
+        cbInitTime = 0.001f * runTime.num;
+        cbFinalValue = (ctrlType == POSITION  || ctrlType == POSITIONAAN) ? _details / 255.0 : 0.0f;
         break;
-      case SET_CONTROL_DIR:
-        // This can be set only if there is not error.
-        if (deviceError.num != 0) break;
-        // No Error
-        // Check if the current control type is POSITIONAAN.
-        ctrlDir = 0;
-        if (ctrlType == POSITIONAAN) {
-          ctrlDir = _details;
-        }
+      case SET_ROM_MIDPOINT:
+        // This can be set onle when the control is NONE.
+        if (ctrlType != NONE) break;
+        romMidPoint = _details;
         break;
       case CALIBRATE:
         // This can be set only if there is not error.
@@ -78,6 +70,7 @@ void readHandleIncomingMessage() {
         // Check the calibration value
         calib = NOCALIB;
         currMech = _details;
+        romMidPoint = 0;
         if (currMech != NOMECH) {
           // Set the encoder offset value
           encOffsetCount = plutoEncoder.read();
@@ -108,9 +101,9 @@ void writeSensorStream() {
   // Update Out data Buffer
   outPayload.newPacket();
   outPayload.add(ang.val(0));
-  outPayload.add(0);
   outPayload.add(control.val(0));
-  outPayload.add(target.val(0));
+  outPayload.add(target);
+  outPayload.add(desired.val(0));
 
   // Add additional data if in DIAGNOSTICS mode
   if (streamType == DIAGNOSTICS) {
@@ -126,6 +119,7 @@ void writeSensorStream() {
                + outPayload.sz() * 4  // Float sensor data
                + 1                    // Control bound data
                + 1                    // Control direction data
+               + 1                    // ROM midpoint
                + 1                    // PLUTO button data
                + 1                    // Checksum
   );
@@ -171,6 +165,10 @@ void writeSensorStream() {
   // Send the control direction byte
   bt.write(ctrlDir);
   chksum += ctrlDir;
+
+  // Send the ROM midpoint
+  bt.write(romMidPoint);
+  chksum += romMidPoint;
 
   // Send the PLUTO buttons state byte
   bt.write(plutoButton);
@@ -234,52 +232,4 @@ void sendVersionDetails() {
   // Send Checksum
   bt.write(chksum);
   bt.flush();
-}
-
-void sendControlParameters(byte ctype) {
-  byte header[] = { 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00 };
-  byte chksum = 0xFE;
-  byte _temp;
-
-  // Get status byte.
-  header[3] = getProgramStatus(CONTROLPARAM);
-  header[3] = header[3] & (0b01110001);
-  header[3] = header[3] | (ctype << 1);
-
-  // Update Out data Buffer
-  outPayload.newPacket();
-  switch (ctype) {
-    // case ACTIVE:
-    //   outPayload.add(acKp);
-    //   break;
-    case POSITION:
-      // outPayload.add(pcKp);
-      outPayload.add(target.val(0));
-      break;
-    case TORQUE:
-      // outPayload.add(tcKp);
-      outPayload.add(target.val(0));
-      break;
-  }
-
-  // Send packet.
-  header[2] = outPayload.sz() * 4 + 4;
-  header[4] = deviceError.bytes[0];
-  header[5] = deviceError.bytes[1];
-  chksum += header[2] + header[3] + header[4] + header[4];
-
-  // Send header
-  bt.write(header[0]);
-  bt.write(header[1]);
-  bt.write(header[2]);
-  bt.write(header[3]);
-  bt.write(header[4]);
-  bt.write(header[5]);
-  // Send payload
-  for (int i = 0; i < outPayload.sz() * 4; i++) {
-    _temp = outPayload.getByte(i);
-    bt.write(_temp);
-    chksum += _temp;
-  }
-  bt.write(chksum);
 }
