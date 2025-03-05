@@ -47,14 +47,6 @@ void readHandleIncomingMessage() {
             || (ctrlType == TORQUE)) {
           // Set target.
           setTarget(serReader.payload, 1, ctrlType);
-          SerialUSB.print(startPos);
-          SerialUSB.print(",");
-          SerialUSB.print(initTime);
-          SerialUSB.print(",");
-          SerialUSB.print(target);
-          SerialUSB.print(",");
-          SerialUSB.print(reachDur);
-          SerialUSB.print("\n");
         }
         break;
       case SET_CONTROL_BOUND:
@@ -78,6 +70,7 @@ void readHandleIncomingMessage() {
         // Check the calibration value
         calib = NOCALIB;
         currMech = _details;
+        romMidPoint = 0;
         if (currMech != NOMECH) {
           // Set the encoder offset value
           encOffsetCount = plutoEncoder.read();
@@ -239,52 +232,4 @@ void sendVersionDetails() {
   // Send Checksum
   bt.write(chksum);
   bt.flush();
-}
-
-void sendControlParameters(byte ctype) {
-  byte header[] = { 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00 };
-  byte chksum = 0xFE;
-  byte _temp;
-
-  // Get status byte.
-  header[3] = getProgramStatus(CONTROLPARAM);
-  header[3] = header[3] & (0b01110001);
-  header[3] = header[3] | (ctype << 1);
-
-  // Update Out data Buffer
-  outPayload.newPacket();
-  switch (ctype) {
-    // case ACTIVE:
-    //   outPayload.add(acKp);
-    //   break;
-    case POSITION:
-      // outPayload.add(pcKp);
-      outPayload.add(target);
-      break;
-    case TORQUE:
-      // outPayload.add(tcKp);
-      outPayload.add(target);
-      break;
-  }
-
-  // Send packet.
-  header[2] = outPayload.sz() * 4 + 4;
-  header[4] = deviceError.bytes[0];
-  header[5] = deviceError.bytes[1];
-  chksum += header[2] + header[3] + header[4] + header[4];
-
-  // Send header
-  bt.write(header[0]);
-  bt.write(header[1]);
-  bt.write(header[2]);
-  bt.write(header[3]);
-  bt.write(header[4]);
-  bt.write(header[5]);
-  // Send payload
-  for (int i = 0; i < outPayload.sz() * 4; i++) {
-    _temp = outPayload.getByte(i);
-    bt.write(_temp);
-    chksum += _temp;
-  }
-  bt.write(chksum);
 }

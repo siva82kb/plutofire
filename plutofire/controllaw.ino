@@ -66,11 +66,6 @@ void updateControlLaw() {
       _currPWM = convertCurrentToPWM(_currI);
       break;
     case RESIST:
-      // PD resistance control
-      // desTorq = -(kp * (_ang - neutral_ang) + kd * 0.02 * _ang - kd * 0.02 * prev_ang);
-      // cur = desTorq / mechnicalConstant;
-      // __currpwm = constrain(map(abs(cur), 0, maxCurrent, 0.1 * 255, 0.9 * 255), -229, 229);
-      // prev_ang = _ang;
       break;
   }
   // Limit the rate of change of PWM
@@ -159,11 +154,6 @@ float controlPositionAAN() {
   _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? pow(_currerr / POS_CTRL_DBAND, 3) : _currerr;
   // Proportional control term.
   _currp = (ctrlDir * _currerr >= 0) ? pcKp * (_currerr) : 0.0;
-  SerialUSB.print(ctrlDir);
-  SerialUSB.print(",");
-  SerialUSB.print(_currerr);
-  SerialUSB.print("\n");
-
 
   // Derivate control term.`
   // The Derivative gait is reduced when the error is below the position control deadband.
