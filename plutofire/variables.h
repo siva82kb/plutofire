@@ -79,16 +79,16 @@ byte isActuated;
 #define torqueClock         7
 
 // Encoder reading pins
-#define PIN_A             2//40// 29// 36//
-#define PIN_B             3//42//  27//38//
+#define PIN_A               2//40// 29// 36//
+#define PIN_B               3//42//  27//38//
 #define TORQSENSOR          0
 #define MOTORCURR           14//grey
 #define MOTORSPEED          15//pink; blue=ground
 
 // Motor control pins
-#define CW                 6//18//38//49// 47//42 //green
+#define CW                  6//18//38//49// 47//42 //green
 #define PWM                 4//19
-#define ENABLE            5//20//36//40//51 brown
+#define ENABLE              5//20//36//40//51 brown
 
 #define RESET               39
 
@@ -100,12 +100,12 @@ byte isActuated;
 #define mechnicalConstant   0.231 //for 48v 0.231; // for 24V 0.077;
 #define maxCurrent          8
 
-#define VERSION             "24.09"
-#define DEVID               "PLUTO240725"
+#define VERSION             "25.05"
+#define DEVID               "PLUTO250520-MHCP-Assess"
 
 // ofset angle
 int encOffsetCount = 0;
-int enPPRActuated = 4096;   //6400 for new motor 4096 for old motor
+int enPPRActuated = 6400;   //6400 for new motor 4096 for old motor
 int enPPRnonActuated = 4096 ;
 
 // Sensor data buffers
