@@ -69,6 +69,15 @@ void readHandleIncomingMessage() {
           ctrlDir = _details;
         }
         break;
+      case SET_CONTROL_GAIN:
+        // Reset controller gain.
+        ctrlGain = 0;
+        // Set the gain of the controller.
+        // This can be set only if there is not error.
+        if (deviceError.num != 0) break;
+        // No Error
+        ctrlGain = (uint8_t) _details;
+        break;
       case SET_AAN_TARGET:
         // This can be set only if there is no error.
         if (deviceError.num != 0) break;
@@ -157,6 +166,7 @@ void writeSensorStream() {
                + outPayload.sz() * 4  // Float sensor data
                + 1                    // Control bound data
                + 1                    // Control direction data
+               + 1                    // Control gain
                + 1                    // PLUTO button data
                + 1                    // Checksum
   );
@@ -202,6 +212,10 @@ void writeSensorStream() {
   // Send the control direction byte
   bt.write(ctrlDir);
   chksum += ctrlDir;
+  
+  // Send the control direction byte
+  bt.write(ctrlGain);
+  chksum += ctrlGain;
 
   // Send the PLUTO buttons state byte
   bt.write(plutoButton);

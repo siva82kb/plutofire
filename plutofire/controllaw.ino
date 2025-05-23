@@ -107,6 +107,7 @@ float controlPosition() {
   float _currp, _currd, _curri;
   float _currerr, _preverr;
   float _errsum = errsum.val(0);
+  float _cgain = (MAX_CTRL_GAIN - 1) * (1.0 * ctrlGain / 255) + 1;
 
   // Check if position control is disabled, or we should have valid 
   // current and previous desired positions. 
@@ -123,19 +124,19 @@ float controlPosition() {
   // Ignore small errors.
   _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? 0.0 : _currerr;
   // Proportional control term.
-  _currp = pcKp * (_currerr);
+  _currp = _cgain * pcKp * (_currerr);
 
   // Previous error
   _preverr = (_prevtgt != INVALID_TARGET) ? _prevtgt - _prevang : _currerr;
   // Derivate control term.
-  _currd = pcKd * (_currerr - _preverr);
+  _currd = _cgain * pcKd * (_currerr - _preverr);
 
   // Error sum.
   _errsum = 0.9999 * _errsum + _currerr;
   float _intlim = ctrlBound * INTEGRATOR_LIMIT / pcKi;
   _errsum = min(_intlim, max(-_intlim, _errsum));
   // Integral control term.
-  _curri = pcKi * _errsum;
+  _curri = _cgain * pcKi * _errsum;
 
   // Log error information
   err.add(_currp);
@@ -200,6 +201,7 @@ float controlPositionAAN() {
   float _currp, _currd, _curri;
   float _currerr, _preverr;
   float _errsum = errsum.val(0);
+  float _cgain = (MAX_CTRL_GAIN - 1) * (1.0 * ctrlGain / 255) + 1;
 
   // Check if position control is disabled, or we should have valid 
   // current and previous desired positions. 
@@ -220,19 +222,19 @@ float controlPositionAAN() {
   // _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? 0.0 : _currerr;
   _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? pow(_currerr / POS_CTRL_DBAND, 3) : _currerr;
   // Proportional control term.
-  _currp = (ctrlDir * _currerr >= 0) ? pcKp * (_currerr) : 0.0;
+  _currp = (ctrlDir * _currerr >= 0) ? (_cgain * pcKp) * (_currerr) : 0.0;
 
   // Derivate control term.`
   // The Derivative gait is reduced when the error is below the position control deadband.
   float _kdgain = linclip(abs(_currerr / POS_CTRL_DBAND));
-  _currd = (ctrlDir * _currerr >= 0) ? pcKd * _kdgain * (_currerr - _preverr) : 0.0;
+  _currd = (ctrlDir * _currerr >= 0) ? (_cgain * pcKd) * _kdgain * (_currerr - _preverr) : 0.0;
 
   // Error sum.
   _errsum = 0.9999 * _errsum + _currerr;
   float _intlim = ctrlBound * INTEGRATOR_LIMIT / pcKi;
   _errsum = min(_intlim, max(-_intlim, _errsum));
   // Integral control term.
-  _curri = pcKi * _errsum;
+  _curri = (_cgain * pcKi) * _errsum;
 
   // Log error information
   err.add(_currp);
@@ -244,12 +246,12 @@ float controlPositionAAN() {
 
 // Bound the position control output.
 float boundPositionControl(float pwm_value) {
-  if (pwm_value > MAXPWM) {
+  if (pwm_value > ctrlBound * MAXPWM) {
     return ctrlBound * MAXPWM;
-  } else if (pwm_value < -MAXPWM) {
+  } else if (pwm_value < -ctrlBound * MAXPWM) {
     return -ctrlBound * MAXPWM;
   }
-  return ctrlBound * pwm_value;
+  return pwm_value;
 }
 
 // Rate limit a variable.
