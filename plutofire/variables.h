@@ -48,6 +48,7 @@
 #define SET_CONTROL_DIR     0x09
 #define SET_AAN_TARGET      0x0A
 #define RESET_AAN_TARGET    0x0B
+#define SET_CONTROL_GAIN    0x0C
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -69,6 +70,7 @@
 
 // Control related variables
 #define POS_CTRL_DBAND      2
+#define MAX_CTRL_GAIN       10.0
 
 #define IO_SWITCH           17
 #define LED_PIN             LED_BUILTIN
@@ -188,6 +190,8 @@ float pcKi = 0.001;
 float ctrlBound = 1.0;
 // Direction variables for assymetric control of assistance.
 int8_t ctrlDir = 0;
+// Position controller scale.
+uint8_t ctrlGain = 0;
 
 // Defining the mechanism dependent controller gains
 const float mechKp[] = { 0.1, 0.1, 0.1, 0.1 };
