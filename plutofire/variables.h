@@ -103,8 +103,8 @@
 // Mechanism offset and range.
 const float mechOffsetValue[] = { 
   0,    // Dummy. No mechanism 
-  68,   // Wrist Flexion/Extension     
-  68,   // Wrist Ulnar/Radial Deviation
+  75,   // Wrist Flexion/Extension     
+  75,   // Wrist Ulnar/Radial Deviation
   90,   // Forearm Prono/Sunpination
   0,    // Hand Opening/Closing
   0,    // Functional mechanism 1
@@ -112,8 +112,8 @@ const float mechOffsetValue[] = {
 };
 const float mechRangeValue[] = { 
   0,     // Dummy. No mechanism 
-  136,   // Wrist Flexion/Extension     
-  136,   // Wrist Ulnar/Radial Deviation
+  150,   // Wrist Flexion/Extension     
+  150,   // Wrist Ulnar/Radial Deviation
   180,   // Forearm Prono/Sunpination
   0,    // Hand Opening/Closing
   0,    // Functional mechanism 1
@@ -125,7 +125,7 @@ byte isActuated;
 
 // Version and device ID.
 const char* fwVersion = "25.03";
-const char* deviceId  = "PLUTO250130";
+const char* deviceId  = "PLUTO-FullAssess-HMCP";
 const char* compileDate = __DATE__ " " __TIME__;
 
 // Last received heartbeat time.

@@ -105,7 +105,7 @@ void readHandleIncomingMessage() {
         currMech = _details;
         if (currMech != NOMECH) {
           // Set the encoder offset value
-          encOffsetCount = plutoEncoder.read();
+          encOffsetCount = currMech == FPS ? -plutoEncoder.read() : plutoEncoder.read();
           calib = YESCALIB;
         }
         break;

@@ -34,7 +34,8 @@ void _assignFloatUnionBytes(int inx, byte* bytes, floatunion_t* temp) {
 
 
 float readEncoderAngle() {
-  long newPosition = plutoEncoder.read() - encOffsetCount;
+  long newPosition = currMech == FPS ? -plutoEncoder.read() : plutoEncoder.read();
+  newPosition = newPosition - encOffsetCount;
   if (isActuated) {
     return (360.0 * newPosition / (enPPRActuated * 4)) - mechOffsetValue[currMech];
   }
