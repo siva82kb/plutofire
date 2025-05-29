@@ -37,9 +37,15 @@ void setup() {
 
   // Set actuated/unactuated
   isActuated = 1;  // actuated = 1; Nonactuated = 0;
+  
+  // No current limb.
+  currLimb = NOLIMB;
 
   // No current mechanism.
   currMech = NOMECH;
+
+  // Set Limb-Mech Scale
+  setLimmbMechScale();
 
   // Set targets to invalid value 999.
   target = INVALID_TARGET;

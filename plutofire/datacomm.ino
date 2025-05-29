@@ -29,6 +29,16 @@ void readHandleIncomingMessage() {
         streamType = DIAGNOSTICS;
         break;
       case SET_CONTROL_TYPE:
+        #if SERIALUSB_DEBUG
+          // Debug print
+          SerialUSB.print("Control Type: ");
+          SerialUSB.print(currMech);
+          SerialUSB.print(" ");
+          SerialUSB.print(deviceError.num);
+          SerialUSB.print(" ");
+          SerialUSB.print(_details);
+          SerialUSB.print("\n");
+        #endif
         // This can be set only if there is not error.
         if (deviceError.num != 0) break;
         // This can only be set if a mechanism is selected, 
@@ -38,6 +48,13 @@ void readHandleIncomingMessage() {
         setControlType(_details);
         break;
       case SET_CONTROL_TARGET:
+        #if SERIALUSB_DEBUG
+          SerialUSB.print("Control Target: ");
+          SerialUSB.print(currMech);
+          SerialUSB.print(" ");
+          SerialUSB.print(deviceError.num);
+          SerialUSB.print("\n");
+        #endif
         // This can be set only if there is not error.
         if (deviceError.num != 0) break;
         // No Error
@@ -46,6 +63,21 @@ void readHandleIncomingMessage() {
             || (ctrlType == TORQUE)) {
           // Set target.
           setTarget(serReader.payload, 1, ctrlType);
+          // Initial time.
+          initTime = runTime.num / 1000.0f + strtTime;
+          #if SERIALUSB_DEBUG
+            SerialUSB.print("Target set: ");
+            SerialUSB.print(strtPos);
+            SerialUSB.print(",");
+            SerialUSB.print(strtTime);
+            SerialUSB.print(",");
+            SerialUSB.print(target);
+            SerialUSB.print(",");
+            SerialUSB.print(reachDur);
+            SerialUSB.print(",");
+            SerialUSB.print(initTime);
+            SerialUSB.print("\n");
+          #endif
         }
         break;
       case SET_CONTROL_BOUND:
@@ -89,34 +121,61 @@ void readHandleIncomingMessage() {
         ctrlDir = target >= strtPos ? +1 : -1;
         // Initial time.
         initTime = runTime.num / 1000.0f + strtTime;
-        SerialUSB.print(strtPos);
-        SerialUSB.print(",");
-        SerialUSB.print(strtTime);
-        SerialUSB.print(",");
-        SerialUSB.print(target);
-        SerialUSB.print(",");
-        SerialUSB.print(reachDur);
-        SerialUSB.print(",");
-        SerialUSB.print(initTime);
-        SerialUSB.print("\n");
+        #if SERIALUSB_DEBUG
+          SerialUSB.print(strtPos);
+          SerialUSB.print(",");
+          SerialUSB.print(strtTime);
+          SerialUSB.print(",");
+          SerialUSB.print(target);
+          SerialUSB.print(",");
+          SerialUSB.print(reachDur);
+          SerialUSB.print(",");
+          SerialUSB.print(initTime);
+          SerialUSB.print("\n");
+        #endif
         break;
       case RESET_AAN_TARGET:
         target = INVALID_TARGET;
         ctrlDir = 0;
         break;
+      case SET_LIMB:
+        #if SERIALUSB_DEBUG
+          SerialUSB.print("Set limb: ");
+          SerialUSB.print(ctrlType);
+          SerialUSB.print(" ");
+          SerialUSB.print(deviceError.num);
+          SerialUSB.print("\n");
+        #endif
+        // This can only be set if there is no error.
+        if (deviceError.num != 0) break;
+        // This can only eb set if the control is NONE.
+        if (ctrlType != NONE) break;
+        // Reset calibration
+        calib = NOCALIB;
+        currMech = NOMECH;
+        // Make sure the input limb is one of the valid options.
+        currLimb = isValidLimb(_details) ? _details : NOLIMB;
+        // Update limb-mech scale.
+        setLimmbMechScale();
+        break;
       case CALIBRATE:
         // This can be set only if there is no error.
         if (deviceError.num != 0) break;
-        // No Error
+        // This can only eb set if the control is NONE.
+        if (ctrlType != NONE) break;
+        // Check if the limb has been set.
+        if (currLimb == NOLIMB) break; 
         // Reset calibration
         // Check the calibration value
         calib = NOCALIB;
         currMech = _details;
         if (currMech != NOMECH) {
           // Set the encoder offset value
-          encOffsetCount = currMech == FPS ? -plutoEncoder.read() : plutoEncoder.read();
+          encOffsetCount = currMech == FPS ? -plutoEncoder.read() : plutoEncoder.read(); // ODD: This is MHCP mechanism specific.
           calib = YESCALIB;
         }
+        // Update limb-mech scale.
+        setLimmbMechScale();
         break;
       case GET_VERSION:
         stream = false;
@@ -124,6 +183,9 @@ void readHandleIncomingMessage() {
         sendVersionDetails();
         break;
       case HEARTBEAT:
+        #if SERIALUSB_DEBUG
+          // SerialUSB.println("Heartbeat");
+        #endif
         lastRxdHeartbeat = millis();
         break;
       case RESET_PACKETNO:
@@ -327,4 +389,16 @@ void sendControlParameters(byte ctype) {
     chksum += _temp;
   }
   bt.write(chksum);
+}
+
+
+/*
+ * Check if the given limb is valid.
+ */
+bool isValidLimb(byte limbval) {
+  return (
+    (limbval == NOLIMB) ||
+    (limbval == RIGHT) ||
+    (limbval == LEFT)
+  );
 }

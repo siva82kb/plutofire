@@ -13,6 +13,14 @@
 #include "SerialReader.h"
 #include "SoftwareSerial.h"
 
+// Serial USB Debug
+#define SERIALUSB_DEBUG     1
+
+// Limb type
+#define NOLIMB              0x00
+#define RIGHT               0x01
+#define LEFT                0x02
+
 // Control type
 #define NONE                0x00
 #define POSITION            0x01
@@ -49,6 +57,7 @@
 #define SET_AAN_TARGET      0x0A
 #define RESET_AAN_TARGET    0x0B
 #define SET_CONTROL_GAIN    0x0C
+#define SET_LIMB            0x0D
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -126,8 +135,8 @@ const float mechRangeValue[] = {
 byte isActuated;
 
 // Version and device ID.
-const char* fwVersion = "25.03";
-const char* deviceId  = "PLUTO-FullAssess-HMCP";
+const char* fwVersion = "25.05";
+const char* deviceId  = "PLUTO-FullAssess-MHCP";
 const char* compileDate = __DATE__ " " __TIME__;
 
 // Last received heartbeat time.
@@ -164,8 +173,15 @@ uint16union_t packetNumber;
 unsigned long startTime;
 ulongunion_t runTime;
 
+// Limb
+byte currLimb = NOLIMB;
+
 // Mechanism
 byte currMech = NOMECH;
+
+// Limb-Mech sensor scale.
+float limbMechAngleScale = 1.0;
+float limbMechControlScale = 1.0;
 
 // Program status
 byte streamType = SENSORSTREAM;

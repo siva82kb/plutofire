@@ -51,5 +51,6 @@ float mjt(float t) {
 float getAANDesiredTrajectory() {
   if (target == INVALID_TARGET) return ang.val(0);
   float _t = runTime.num / 1000.0f;
-  return strtPos + (target - strtPos) * mjt((_t - initTime) / reachDur);
+  float _tn = reachDur > 0 ? (_t - initTime) / reachDur : 1.0; 
+  return strtPos + (target - strtPos) * mjt(_tn);
 }

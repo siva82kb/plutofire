@@ -20,6 +20,11 @@ void checkHeartbeat() {
  */
 void handleErrors() {
   if (deviceError.num != 0) {
+    #if SERIALUSB_DEBUG
+      SerialUSB.print("Error occured: ");
+      SerialUSB.print(deviceError.num);
+      SerialUSB.print("\n");
+    #endif
     setControlType(NONE);
   }
 }
@@ -37,10 +42,42 @@ float readEncoderAngle() {
   long newPosition = currMech == FPS ? -plutoEncoder.read() : plutoEncoder.read();
   newPosition = newPosition - encOffsetCount;
   if (isActuated) {
-    return (360.0 * newPosition / (enPPRActuated * 4)) - mechOffsetValue[currMech];
+    return limbMechAngleScale * (360.0 * newPosition / (enPPRActuated * 4)) - mechOffsetValue[currMech];
   }
-  return ((360.0 * newPosition / (enPPRnonActuated)));
+  return limbMechAngleScale * ((360.0 * newPosition / (enPPRnonActuated)));
 }
+
+
+/*
+ * Function to handle setting of the limb-mechanism scale
+ */
+void setLimmbMechScale() {
+  // Set limb-mech scale.
+  if (currLimb != LEFT) {
+    limbMechAngleScale = 1.0;
+    limbMechControlScale = 1.0;
+  } else {
+    // Check the mechanism type.
+    limbMechAngleScale = currMech == HOC ? 1.0 : -1.0f;
+    limbMechControlScale = currMech != WFE ? 1.0 : -1.0f; // ODD: MHCP strange stuff
+  } 
+  SerialUSB.print("Scales: ");
+  SerialUSB.print(currLimb);
+  SerialUSB.print(",");
+  SerialUSB.print(currMech);
+  SerialUSB.print(",");
+  SerialUSB.print(limbMechAngleScale);
+  SerialUSB.print(",");
+  SerialUSB.print(limbMechControlScale);
+  SerialUSB.print("\n");
+}
+
+// float convertForLimb() {
+//   // No limb set.
+//   if (currLimb != LEFT) return 1.0;
+//   // Left limb has to be dealt with different depending on the mechanism.
+//   return currMech == HOC ? 1.0 : -1.0;
+// }
 
 
 /*
@@ -93,8 +130,8 @@ byte getProgramStatus(byte dtype) {
 }
 
 byte getMechActType(void) {
-  // CURR MECH | CURR MECH | CURR MECH | CURR MECH | X | X | X | IS ACTUATED
-  return ((currMech << 4) | isActuated);
+  // CURR MECH | CURR MECH | CURR MECH | CURR MECH | CURR LIMB | CURR LIMB | X | IS ACTUATED
+  return ((currMech << 4) | (currLimb << 2) | isActuated);
 }
 
 // // Update sensor parameter using  byte array
@@ -175,13 +212,43 @@ void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
   }
 }
 
+// Set position target [This will be deprecated]
+void setTargetOld(byte* payload, int strtInx, byte ctrl) {
+  int inx = strtInx;
+  floatunion_t temp;
+  _assignFloatUnionBytes(inx, payload, &temp);
+  if ((ctrl == POSITION) || (ctrl == TORQUE)) {
+    target = temp.num;
+  } else {
+    target = INVALID_TARGET;
+  }
+}
+
 // Set position target
 void setTarget(byte* payload, int strtInx, byte ctrl) {
   int inx = strtInx;
   floatunion_t temp;
   _assignFloatUnionBytes(inx, payload, &temp);
   if ((ctrl == POSITION) || (ctrl == TORQUE)) {
+    // target = temp.num;
+    int inx = strtInx;
+    floatunion_t temp;
+    // The are four floats: start position, start time, target, duration.
+    // Initial position
+    _assignFloatUnionBytes(inx, payload, &temp);
+    strtPos = temp.num;
+    // Initial time
+    inx += 4;
+    _assignFloatUnionBytes(inx, payload, &temp);
+    strtTime = min(0, temp.num);
+    // Target
+    inx += 4;
+    _assignFloatUnionBytes(inx, payload, &temp);
     target = temp.num;
+    // Duration
+    inx += 4;
+    _assignFloatUnionBytes(inx, payload, &temp);
+    reachDur = max(0.0, temp.num);
   } else {
     target = INVALID_TARGET;
   }

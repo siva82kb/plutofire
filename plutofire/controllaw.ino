@@ -62,7 +62,8 @@ void updateControlLaw() {
       break;
     case POSITION:
       // Update desired position
-      desired.add(target);
+      // desired.add(target);
+      desired.add(getAANDesiredTrajectory());
       // Position control.
       _currI = controlPosition();
       _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
@@ -75,8 +76,11 @@ void updateControlLaw() {
       _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
       break;
     case TORQUE:
+      // Update desired position
+      // desired.add(target);
+      desired.add(getAANDesiredTrajectory());
       // Feedfoward torque control.
-      _currI = target / MECHANICAL_CONST;
+      _currI = desired.val(0) / MECHANICAL_CONST;
       _currPWM = convertCurrentToPWM(_currI);
       break;
     case RESIST:
@@ -93,7 +97,7 @@ void updateControlLaw() {
   _currPWM = min(MAXPWM, max(-MAXPWM, _currPWM));
   // Send PWM value to motor controller & update control.
   if (_motorEnabled) {
-    sendPWMToMotor(_currPWM);
+    sendPWMToMotor(limbMechControlScale * _currPWM);
   }
   control.add(_currPWM);
 }
