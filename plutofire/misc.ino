@@ -20,11 +20,11 @@ void checkHeartbeat() {
  */
 void handleErrors() {
   if (deviceError.num != 0) {
-    #if SERIALUSB_DEBUG
-      SerialUSB.print("Error occured: ");
-      SerialUSB.print(deviceError.num);
-      SerialUSB.print("\n");
-    #endif
+    // #if SERIALUSB_DEBUG
+    //   SerialUSB.print("Error occured: ");
+    //   SerialUSB.print(deviceError.num);
+    //   SerialUSB.print("\n");
+    // #endif
     setControlType(NONE);
   }
 }
@@ -53,23 +53,27 @@ float readEncoderAngle() {
  */
 void setLimmbMechScale() {
   // Set limb-mech scale.
-  if (currLimb != LEFT) {
+  if (currLimb == NOLIMB) {
     limbMechAngleScale = 1.0;
     limbMechControlScale = 1.0;
-  } else {
-    // Check the mechanism type.
-    limbMechAngleScale = currMech == HOC ? 1.0 : -1.0f;
-    limbMechControlScale = currMech != WFE ? 1.0 : -1.0f; // ODD: MHCP strange stuff
-  } 
-  SerialUSB.print("Scales: ");
-  SerialUSB.print(currLimb);
-  SerialUSB.print(",");
-  SerialUSB.print(currMech);
-  SerialUSB.print(",");
-  SerialUSB.print(limbMechAngleScale);
-  SerialUSB.print(",");
-  SerialUSB.print(limbMechControlScale);
-  SerialUSB.print("\n");
+  } else if (currLimb == RIGHT) {
+    limbMechAngleScale = 1.0;
+    limbMechControlScale = currMech == FPS ? -1.0 : 1.0; // ODD: MHCP strange stuff
+  } else if (currLimb == LEFT) {
+    limbMechAngleScale = currMech == HOC ? 1.0 : -1.0;
+    limbMechControlScale = currMech == WFE ? -1.0 : 1.0; // ODD: MHCP strange
+  }
+  #if SERIALUSB_DEBUG
+    SerialUSB.print("Scales: ");
+    SerialUSB.print(currLimb);
+    SerialUSB.print(",");
+    SerialUSB.print(currMech);
+    SerialUSB.print(",");
+    SerialUSB.print(limbMechAngleScale);
+    SerialUSB.print(",");
+    SerialUSB.print(limbMechControlScale);
+    SerialUSB.print("\n");
+  #endif
 }
 
 // float convertForLimb() {
