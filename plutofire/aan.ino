@@ -37,7 +37,7 @@ float getAssistanceSupportForTarget(float currAng, float currTarget) {
 
 // Gradual rise function with clipping
 float g(float x) {
-  return (x >= 1) ? 1.0 : (x <= 0) ? 0.0 : x;
+  return (x >= 1) ? 1.0 : ((x <= 0) ? 0.0 : x);
 }
 
 // Minimum jerk trajectory function
@@ -53,4 +53,13 @@ float getAANDesiredTrajectory() {
   float _t = runTime.num / 1000.0f;
   float _tn = reachDur > 0 ? (_t - initTime) / reachDur : 1.0; 
   return strtPos + (target - strtPos) * mjt(_tn);
+}
+  
+// Compute the linear desired trajectory.
+float getLinearDesiredTrajectory() {
+  if (target == INVALID_TARGET) return ang.val(0);
+  float _t = runTime.num / 1000.0f;
+  float _tn = reachDur > 0 ? g((_t - initTime) / reachDur) : 1.0;
+  SerialUSB.println(_tn);
+  return strtPos + (target - strtPos) * _tn;
 }

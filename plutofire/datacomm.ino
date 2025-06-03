@@ -60,6 +60,7 @@ void readHandleIncomingMessage() {
         // No Error
         // Check if the current control type is POSITION or TORQUE.
         if ((ctrlType == POSITION)
+            || (ctrlType == POSITIONLINEAR)
             || (ctrlType == TORQUE)) {
           // Set target.
           setTarget(serReader.payload, 1, ctrlType);
@@ -87,6 +88,7 @@ void readHandleIncomingMessage() {
         // Check if the current control type is POSITION.
         ctrlBound = 0.0;
         if ((ctrlType == POSITION)
+            || (ctrlType == POSITIONLINEAR)
             || (ctrlType == POSITIONAAN)) {
           ctrlBound = _details / 255.0;
         }

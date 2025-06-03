@@ -233,7 +233,7 @@ void setTarget(byte* payload, int strtInx, byte ctrl) {
   int inx = strtInx;
   floatunion_t temp;
   _assignFloatUnionBytes(inx, payload, &temp);
-  if ((ctrl == POSITION) || (ctrl == TORQUE)) {
+  if ((ctrl == POSITION) || (ctrl == POSITIONLINEAR) || (ctrl == TORQUE)) {
     // target = temp.num;
     int inx = strtInx;
     floatunion_t temp;

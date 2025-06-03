@@ -27,6 +27,7 @@
 #define RESIST              0x02
 #define TORQUE              0x03
 #define POSITIONAAN         0x04
+#define POSITIONLINEAR      0x05
 
 // Mechanisms
 #define NOMECH              0x00
