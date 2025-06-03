@@ -103,7 +103,7 @@
 #define MAX_CURRENT         8
 
 // Heart beat related variable
-#define MAX_HBEAT_INTERVAL  1.0 // Seconds
+#define MAX_HBEAT_INTERVAL  2.0 // Seconds
 
 // Some useful function
 #define sgn(x) ((x) < 0 ? -1 : ((x) > 0 ? 1 : 0))
