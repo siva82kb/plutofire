@@ -60,6 +60,6 @@ float getLinearDesiredTrajectory() {
   if (target == INVALID_TARGET) return ang.val(0);
   float _t = runTime.num / 1000.0f;
   float _tn = reachDur > 0 ? g((_t - initTime) / reachDur) : 1.0;
-  SerialUSB.println(_tn);
+  // SerialUSB.println(_tn);
   return strtPos + (target - strtPos) * _tn;
 }

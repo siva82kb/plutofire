@@ -24,6 +24,8 @@ void setControlType(byte ctype) {
       // Set the contoller gains for the appropriate mechanism.
       setControlParamForMech();
     }
+    // Set control hold.
+    setControlHold(CONTROL_FREE);
     // Set desired target.
     desired.add(INVALID_TARGET);
     // Reset position controller error buffers.
@@ -66,14 +68,16 @@ void updateControlLaw() {
       desired.add(getAANDesiredTrajectory());
       // Position control.
       _currI = controlPosition();
-      _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
+      _currPWM = ctrlDynamicsA * control.val(0) + ctrlDynamicsB * convertCurrentToPWM(_currI);
+      _currPWM = boundPositionControl(_currPWM);
       break;
     case POSITIONAAN:
       // Check if its an invalid target
       desired.add(getAANDesiredTrajectory());
       // Position control.
       _currI = controlPositionAAN();
-      _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
+      _currPWM = ctrlDynamicsA * control.val(0) + ctrlDynamicsB * convertCurrentToPWM(_currI);
+      _currPWM = boundPositionControl(_currPWM);
       break;
     case POSITIONLINEAR:
       // Update desired position
@@ -81,7 +85,8 @@ void updateControlLaw() {
       desired.add(getLinearDesiredTrajectory());
       // Position control.
       _currI = controlPosition();
-      _currPWM = boundPositionControl(convertCurrentToPWM(_currI));
+      _currPWM = ctrlDynamicsA * control.val(0) + ctrlDynamicsB * convertCurrentToPWM(_currI);
+      _currPWM = boundPositionControl(_currPWM);
       break;
     case TORQUE:
       // Update desired position

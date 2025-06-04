@@ -59,6 +59,8 @@
 #define RESET_AAN_TARGET    0x0B
 #define SET_CONTROL_GAIN    0x0C
 #define SET_LIMB            0x0D
+#define HOLD_CONTROL        0x0E
+#define DECAY_CONTROL       0x0F
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -77,6 +79,11 @@
 // Kinematic calib status
 #define NOCALIB             0x00
 #define YESCALIB            0x01
+
+// Control hold variables
+#define CONTROL_FREE        0x00
+#define CONTROL_HOLD        0x01
+#define CONTROL_DECAY       0x02
 
 // Control related variables
 #define POS_CTRL_DBAND      2
@@ -209,11 +216,17 @@ float ctrlBound = 1.0;
 int8_t ctrlDir = 0;
 // Position controller scale.
 uint8_t ctrlGain = 0;
+// Control hold value to be used with the POSITIONLINEARHOLD controller.
+uint8_t ctrlHold = 0;
 
 // Defining the mechanism dependent controller gains
 const float mechKp[] = { 0.1, 0.1, 0.1, 0.1 };
 const float mechKd[] = { 0.01, 0.01, 0.01, 0.01 };  
 const float mechKi[] = { 0.001, 0.001, 0.001, 0.001 };
+
+// Control dynamics constant
+float ctrlDynamicsA = 0.0;
+float ctrlDynamicsB = 1.0;
 
 // Resistance control
 float kp = -1;

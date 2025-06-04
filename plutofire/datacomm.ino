@@ -31,13 +31,13 @@ void readHandleIncomingMessage() {
       case SET_CONTROL_TYPE:
         #if SERIALUSB_DEBUG
           // Debug print
-          SerialUSB.print("Control Type: ");
+          SerialUSB.print("\nControl Type: ");
           SerialUSB.print(currMech);
           SerialUSB.print(" ");
           SerialUSB.print(deviceError.num);
           SerialUSB.print(" ");
           SerialUSB.print(_details);
-          SerialUSB.print("\n");
+          SerialUSB.print(" ");
         #endif
         // This can be set only if there is not error.
         if (deviceError.num != 0) break;
@@ -46,6 +46,10 @@ void readHandleIncomingMessage() {
         if ((currMech == NOMECH) || (calib == NOCALIB)) break;
         // No Error, Mechanism set and calibrated.
         setControlType(_details);
+        #if SERIALUSB_DEBUG
+          SerialUSB.print(ctrlType);
+          SerialUSB.print("\n");
+        #endif
         break;
       case SET_CONTROL_TARGET:
         #if SERIALUSB_DEBUG
@@ -66,6 +70,8 @@ void readHandleIncomingMessage() {
           setTarget(serReader.payload, 1, ctrlType);
           // Initial time.
           initTime = runTime.num / 1000.0f + strtTime;
+          // Reset the control hold value.
+          setControlHold(CONTROL_FREE);
           #if SERIALUSB_DEBUG
             SerialUSB.print("Target set: ");
             SerialUSB.print(strtPos);
@@ -135,6 +141,30 @@ void readHandleIncomingMessage() {
           SerialUSB.print(initTime);
           SerialUSB.print("\n");
         #endif
+        break;
+      case HOLD_CONTROL:
+        // This can be set only if there is no error.
+        if (deviceError.num != 0) break;
+        // No Error
+        // Check if the current control type is POSITION.
+        setControlHold(CONTROL_FREE);
+        if ((ctrlType == POSITION)
+            || (ctrlType == POSITIONLINEAR)
+            || (ctrlType == POSITIONAAN)) {
+          setControlHold(CONTROL_HOLD);
+        }
+        break;
+      case DECAY_CONTROL:
+        // This can be set only if there is no error.
+        if (deviceError.num != 0) break;
+        // No Error
+        // Check if the current control type is POSITION.
+        setControlHold(CONTROL_FREE);
+        if ((ctrlType == POSITION)
+            || (ctrlType == POSITIONLINEAR)
+            || (ctrlType == POSITIONAAN)) {
+          setControlHold(CONTROL_DECAY);
+        }
         break;
       case RESET_AAN_TARGET:
         target = INVALID_TARGET;
@@ -231,6 +261,7 @@ void writeSensorStream() {
                + 1                    // Control bound data
                + 1                    // Control direction data
                + 1                    // Control gain
+               + 1                    // Control hold
                + 1                    // PLUTO button data
                + 1                    // Checksum
   );
@@ -280,6 +311,10 @@ void writeSensorStream() {
   // Send the control direction byte
   bt.write(ctrlGain);
   chksum += ctrlGain;
+  
+  // Send the control hold byte
+  bt.write(ctrlHold);
+  chksum += ctrlHold;
 
   // Send the PLUTO buttons state byte
   bt.write(plutoButton);

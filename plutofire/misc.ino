@@ -233,7 +233,9 @@ void setTarget(byte* payload, int strtInx, byte ctrl) {
   int inx = strtInx;
   floatunion_t temp;
   _assignFloatUnionBytes(inx, payload, &temp);
-  if ((ctrl == POSITION) || (ctrl == POSITIONLINEAR) || (ctrl == TORQUE)) {
+  if ((ctrl == POSITION) 
+      || (ctrl == POSITIONLINEAR)
+      || (ctrl == TORQUE)) {
     // target = temp.num;
     int inx = strtInx;
     floatunion_t temp;
@@ -278,6 +280,32 @@ void setAANTarget(byte* payload, int strtInx) {
   inx += 4;
   _assignFloatUnionBytes(inx, payload, &temp);
   reachDur = max(1.0, temp.num);
+}
+
+// Set the control hold parameter
+void setControlHold(uint8_t hold) {
+  ctrlHold = hold;
+  ctrlDynamicsA = 0.0;
+  ctrlDynamicsB = 1.0;
+  if (ctrlHold == CONTROL_HOLD) {
+    ctrlDynamicsA = 1.0;
+    ctrlDynamicsB = 0.0;
+  } else if (ctrlHold == CONTROL_DECAY) {
+    ctrlDynamicsA = 0.999;
+    ctrlDynamicsB = 0.0;
+  }
+  #if SERIALUSB_DEBUG
+    SerialUSB.print("\n");
+    SerialUSB.print("Control Hold: ");
+    SerialUSB.print(ctrlHold);
+    SerialUSB.print(",");
+    SerialUSB.print("A : ");
+    SerialUSB.print(ctrlDynamicsA);
+    SerialUSB.print(",");
+    SerialUSB.print("B : ");
+    SerialUSB.print(ctrlDynamicsB);
+    SerialUSB.print("\n");
+  #endif
 }
 
 // Generating smooth desired positions from the target.
