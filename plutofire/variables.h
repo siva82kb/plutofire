@@ -28,6 +28,7 @@
 #define TORQUE              0x03
 #define POSITIONAAN         0x04
 #define POSITIONLINEAR      0x05
+#define OBJECTSIM           0x06
 
 // Mechanisms
 #define NOMECH              0x00
@@ -61,6 +62,8 @@
 #define SET_LIMB            0x0D
 #define HOLD_CONTROL        0x0E
 #define DECAY_CONTROL       0x0F
+#define SET_OBJECT_PARAM    0x10
+#define GET_OBJECT_PARAM    0x11
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -246,6 +249,10 @@ float strtPos;
 float strtTime;
 float initTime;
 float reachDur;
+
+// Object simulator parameters
+float objK = 0.3;
+float objPos = -30;
 
 /* Tempoary section : To be formated later */
 Bounce bounce = Bounce();

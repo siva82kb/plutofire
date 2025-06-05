@@ -166,6 +166,12 @@ void readHandleIncomingMessage() {
           setControlHold(CONTROL_DECAY);
         }
         break;
+      case SET_OBJECT_PARAM:
+        if (deviceError.num != 0) break;
+        if (ctrlType)
+        break;
+      case GET_OBJECT_PARAM:
+        break;
       case RESET_AAN_TARGET:
         target = INVALID_TARGET;
         ctrlDir = 0;

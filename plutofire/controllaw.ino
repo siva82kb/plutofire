@@ -103,6 +103,16 @@ void updateControlLaw() {
       // __currpwm = constrain(map(abs(cur), 0, maxCurrent, 0.1 * 255, 0.9 * 255), -229, 229);
       // prev_ang = _ang;
       break;
+    case OBJECTSIM:
+      // Object simulator.
+      if (ang.val(0) < objPos) {
+        _currPWM = 0;
+      } else {
+        float _x = abs(objPos - ang.val(0)) / 20.0;
+        _x = _x >= 1 ? 1.0 : _x;
+        _currPWM = - (MAXPWM - MINPWM) * pow(_x, 3) - 50 * (ang.val(0) - ang.val(1));
+      }
+      break;
   }
   // Limit the rate of change of PWM
   _currPWM = rateLimitValue(_currPWM, _prevPWM, MAXDELPWM);
