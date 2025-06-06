@@ -172,8 +172,6 @@ void readHandleIncomingMessage() {
         setObjectParams(serReader.payload, 1);
         break;
       case GET_OBJECT_PARAM:
-      SerialUSB.println("Get Object Params");
-        stream = false;
         // Send the current firmware version.
         sendObjectParams();
         break;
