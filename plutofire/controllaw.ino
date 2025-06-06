@@ -28,6 +28,9 @@ void setControlType(byte ctype) {
     setControlHold(CONTROL_FREE);
     // Set desired target.
     desired.add(INVALID_TARGET);
+    // Reset object params
+    objPos = 0;
+    objDelPos = -1;
     // Reset position controller error buffers.
     err.add(0.0);
     errdiff.add(0.0);
@@ -108,14 +111,16 @@ void updateControlLaw() {
       if (ang.val(0) < objPos) {
         _currPWM = 0;
       } else {
-        float _x = abs(objPos - ang.val(0)) / 20.0;
-        _x = _x >= 1 ? 1.0 : _x;
+        float _x = abs(objPos - ang.val(0)) / objDelPos;
+        _x = _x >= 1 ? 1.0 : (_x <= 0 ? 0 : _x);
         _currPWM = - (MAXPWM - MINPWM) * pow(_x, 3) - 50 * (ang.val(0) - ang.val(1));
       }
       break;
   }
-  // Limit the rate of change of PWM
-  _currPWM = rateLimitValue(_currPWM, _prevPWM, MAXDELPWM);
+  // Limit the rate of change of PWM, but not in the OBJECTSIM mode.
+  if (ctrlType != OBJECTSIM) {
+    _currPWM = rateLimitValue(_currPWM, _prevPWM, MAXDELPWM);
+  }
   // Clip PWM value
   _currPWM = min(MAXPWM, max(-MAXPWM, _currPWM));
   // Send PWM value to motor controller & update control.

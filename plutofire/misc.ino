@@ -308,6 +308,28 @@ void setControlHold(uint8_t hold) {
   #endif
 }
 
+// Set object parameters
+void setObjectParams(byte* payload, int strtInx) {
+  int inx = strtInx;
+  floatunion_t temp;
+  // The are two floats: object stiffness and position.
+  // Stiffness
+  _assignFloatUnionBytes(inx, payload, &temp);
+  objDelPos = max(0, temp.num);
+  // Initial time
+  inx += 4;
+  _assignFloatUnionBytes(inx, payload, &temp);
+  objPos = temp.num;
+  #if SERIALUSB_DEBUG
+    SerialUSB.print("\n");
+    SerialUSB.print("Object Params: ");
+    SerialUSB.print(objDelPos);
+    SerialUSB.print(",");
+    SerialUSB.print(objPos);
+    SerialUSB.print("\n");
+  #endif
+}
+
 // Generating smooth desired positions from the target.
 float generateSmoothDesiredPosition(float x0) {
   static float ypast[] = { 0.0f, 0.0f };

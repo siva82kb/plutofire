@@ -44,6 +44,7 @@
 #define CONTROLPARAM        0x01
 #define DIAGNOSTICS         0x02
 #define VERSION             0x03
+#define OBJECTPARAM         0x04
 
 // In data type
 #define GET_VERSION         0x00
@@ -251,8 +252,8 @@ float initTime;
 float reachDur;
 
 // Object simulator parameters
-float objK = 0.3;
-float objPos = -30;
+float objPos = 0;
+float objDelPos = 40;
 
 /* Tempoary section : To be formated later */
 Bounce bounce = Bounce();

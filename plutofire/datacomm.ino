@@ -168,9 +168,14 @@ void readHandleIncomingMessage() {
         break;
       case SET_OBJECT_PARAM:
         if (deviceError.num != 0) break;
-        if (ctrlType)
+        if (ctrlType != OBJECTSIM) break;
+        setObjectParams(serReader.payload, 1);
         break;
       case GET_OBJECT_PARAM:
+      SerialUSB.println("Get Object Params");
+        stream = false;
+        // Send the current firmware version.
+        sendObjectParams();
         break;
       case RESET_AAN_TARGET:
         target = INVALID_TARGET;
@@ -381,6 +386,51 @@ void sendVersionDetails() {
     bt.write(compileDate[i]);
     chksum += compileDate[i];
   }
+  // Send Checksum
+  bt.write(chksum);
+  bt.flush();
+}
+
+void sendObjectParams() {
+  // Format:
+  // 255 | 255 | No. of bytes | Status | Error Val 1 | Error Val 2 | ...
+  // [Current Mechanism][isActuated] | Payload | Chksum
+  byte header[] = { 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  byte chksum = 0xFE;
+  byte _temp;
+
+  // Update Out data Buffer
+  outPayload.newPacket();
+  outPayload.add(objDelPos);
+  outPayload.add(objPos);
+
+  // Send packet.
+  header[2] = (4                      // Four headers
+               + outPayload.sz() * 4  // Object stiffness, position
+               + 1                    // Checksum
+  );
+  header[3] = getProgramStatus(OBJECTPARAM);
+  header[4] = deviceError.bytes[0];
+  header[5] = deviceError.bytes[1];
+  header[6] = getMechActType();
+  chksum += header[2] + header[3] + header[4] + header[5] + header[6];
+
+  // Send the header.
+  bt.write(header[0]);
+  bt.write(header[1]);
+  bt.write(header[2]);
+  bt.write(header[3]);
+  bt.write(header[4]);
+  bt.write(header[5]);
+  bt.write(header[6]);
+
+  // Send the payload with the floats first
+  for (int i = 0; i < outPayload.sz() * 4; i++) {
+    _temp = outPayload.getByte(i);
+    bt.write(_temp);
+    chksum += _temp;
+  }
+
   // Send Checksum
   bt.write(chksum);
   bt.flush();
