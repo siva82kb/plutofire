@@ -30,7 +30,7 @@ void setControlType(byte ctype) {
     desired.add(INVALID_TARGET);
     // Reset object params
     objPos = 0;
-    objDelPos = -1;
+    objDelPos = -1;    
     // Reset position controller error buffers.
     err.add(0.0);
     errdiff.add(0.0);
@@ -114,6 +114,7 @@ void updateControlLaw() {
         float _x = abs(objPos - ang.val(0)) / objDelPos;
         _x = _x >= 1 ? 1.0 : (_x <= 0 ? 0 : _x);
         _currPWM = - (MAXPWM - MINPWM) * pow(_x, 3) - 50 * (ang.val(0) - ang.val(1)) - MINPWM;
+        _currPWM = ctrlDynamicsA * control.val(0) + ctrlDynamicsB * _currPWM;
       }
       break;
   }

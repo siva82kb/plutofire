@@ -162,7 +162,8 @@ void readHandleIncomingMessage() {
         setControlHold(CONTROL_FREE);
         if ((ctrlType == POSITION)
             || (ctrlType == POSITIONLINEAR)
-            || (ctrlType == POSITIONAAN)) {
+            || (ctrlType == POSITIONAAN)
+            || (ctrlType == OBJECTSIM)) {
           setControlHold(CONTROL_DECAY);
         }
         break;
@@ -170,6 +171,7 @@ void readHandleIncomingMessage() {
         if (deviceError.num != 0) break;
         if (ctrlType != OBJECTSIM) break;
         setObjectParams(serReader.payload, 1);
+        setControlHold(CONTROL_FREE);
         break;
       case GET_OBJECT_PARAM:
         // Send the current firmware version.

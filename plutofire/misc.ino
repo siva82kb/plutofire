@@ -291,7 +291,7 @@ void setControlHold(uint8_t hold) {
     ctrlDynamicsA = 1.0;
     ctrlDynamicsB = 0.0;
   } else if (ctrlHold == CONTROL_DECAY) {
-    ctrlDynamicsA = 0.999;
+    ctrlDynamicsA = 0.99;
     ctrlDynamicsB = 0.0;
   }
   #if SERIALUSB_DEBUG
