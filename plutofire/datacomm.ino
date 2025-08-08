@@ -284,57 +284,82 @@ void writeSensorStream() {
   chksum += header[2] + header[3] + header[4] + header[5] + header[6];
 
   // Send the header.
-  bt.write(header[0]);
-  bt.write(header[1]);
-  bt.write(header[2]);
-  bt.write(header[3]);
-  bt.write(header[4]);
-  bt.write(header[5]);
-  bt.write(header[6]);
+  // bt.write(header[0]);
+  // bt.write(header[1]);
+  // bt.write(header[2]);
+  // bt.write(header[3]);
+  // bt.write(header[4]);
+  // bt.write(header[5]);
+  // bt.write(header[6]);
+
+  SerialUSB.write(header[0]);
+  SerialUSB.write(header[1]);
+  SerialUSB.write(header[2]);
+  SerialUSB.write(header[3]);
+  SerialUSB.write(header[4]);
+  SerialUSB.write(header[5]);
+  SerialUSB.write(header[6]);
 
   // Send packet number
   for (int i = 0; i < 2; i++) {
-    bt.write(packetNumber.bytes[i]);
+    // bt.write(packetNumber.bytes[i]);
+    SerialUSB.write(packetNumber.bytes[i]);
+
     chksum += packetNumber.bytes[i];
   }
 
   // Send current run time
   for (int i = 0; i < 4; i++) {
-    bt.write(runTime.bytes[i]);
+    // bt.write(runTime.bytes[i]);
+    SerialUSB.write(runTime.bytes[i]);
     chksum += runTime.bytes[i];
   }
 
   // Send the payload with the floats first
   for (int i = 0; i < outPayload.sz() * 4; i++) {
     _temp = outPayload.getByte(i);
-    bt.write(_temp);
+    // bt.write(_temp);
+    SerialUSB.write(_temp);
+
     chksum += _temp;
   }
 
   // Write the current control Bound.
   byte _ctrlb = (byte)(255 * ctrlBound);
-  bt.write(_ctrlb);
+  // bt.write(_ctrlb);
+  SerialUSB.write(_ctrlb);
+
   chksum += _ctrlb;
 
   // Send the control direction byte
-  bt.write(ctrlDir);
+  // bt.write(ctrlDir);
+  SerialUSB.write(ctrlDir);
+
   chksum += ctrlDir;
   
   // Send the control direction byte
-  bt.write(ctrlGain);
+  // bt.write(ctrlGain);
+  SerialUSB.write(ctrlGain);
+
   chksum += ctrlGain;
   
   // Send the control hold byte
-  bt.write(ctrlHold);
+  // bt.write(ctrlHold);
+  SerialUSB.write(ctrlHold);
+
   chksum += ctrlHold;
 
   // Send the PLUTO buttons state byte
-  bt.write(plutoButton);
+  // bt.write(plutoButton);
+  SerialUSB.write(plutoButton);
+
   chksum += plutoButton;
 
   // Send Checksum
-  bt.write(chksum);
-  bt.flush();
+  // bt.write(chksum);
+  SerialUSB.write(chksum);
+
+  // bt.flush();
 }
 
 void sendVersionDetails() {
@@ -360,36 +385,55 @@ void sendVersionDetails() {
   chksum += header[2] + header[3] + header[4] + header[5] + header[6];
 
   // Send the header.
-  bt.write(header[0]);
-  bt.write(header[1]);
-  bt.write(header[2]);
-  bt.write(header[3]);
-  bt.write(header[4]);
-  bt.write(header[5]);
-  bt.write(header[6]);
+  // bt.write(header[0]);
+  // bt.write(header[1]);
+  // bt.write(header[2]);
+  // bt.write(header[3]);
+  // bt.write(header[4]);
+  // bt.write(header[5]);
+  // bt.write(header[6]);
+  
+  SerialUSB.write(header[0]);
+  SerialUSB.write(header[1]);
+  SerialUSB.write(header[2]);
+  SerialUSB.write(header[3]);
+  SerialUSB.write(header[4]);
+  SerialUSB.write(header[5]);
+  SerialUSB.write(header[6]);
 
   // Send Device ID
   for (unsigned int i = 0; i < strlen(deviceId); i++) {
-    bt.write(deviceId[i]);
+    // bt.write(deviceId[i]);
+    SerialUSB.write(deviceId[i]);
     chksum += deviceId[i];
   }
-  bt.write(',');
+  // bt.write(',');
+  SerialUSB.write(',');
+
   chksum += ',';
   // Send firmware version
   for (unsigned int i = 0; i < strlen(fwVersion); i++) {
-    bt.write(fwVersion[i]);
+    // bt.write(fwVersion[i]);
+    SerialUSB.write(fwVersion[i]);
+
     chksum += fwVersion[i];
   }
-  bt.write(',');
+  // bt.write(',');
+  SerialUSB.write(',');
+
   chksum += ',';
   // Send firmware compilation date
   for (unsigned int i = 0; i < strlen(compileDate); i++) {
-    bt.write(compileDate[i]);
+    // bt.write(compileDate[i]);
+    SerialUSB.write(compileDate[i]);
+
     chksum += compileDate[i];
   }
   // Send Checksum
-  bt.write(chksum);
-  bt.flush();
+  // bt.write(chksum);
+  SerialUSB.write(chksum);
+
+  // bt.flush();
 }
 
 void sendObjectParams() {
@@ -417,24 +461,35 @@ void sendObjectParams() {
   chksum += header[2] + header[3] + header[4] + header[5] + header[6];
 
   // Send the header.
-  bt.write(header[0]);
-  bt.write(header[1]);
-  bt.write(header[2]);
-  bt.write(header[3]);
-  bt.write(header[4]);
-  bt.write(header[5]);
-  bt.write(header[6]);
+  // bt.write(header[0]);
+  // bt.write(header[1]);
+  // bt.write(header[2]);
+  // bt.write(header[3]);
+  // bt.write(header[4]);
+  // bt.write(header[5]);
+  // bt.write(header[6]);
+  SerialUSB.write(header[0]);
+  SerialUSB.write(header[1]);
+  SerialUSB.write(header[2]);
+  SerialUSB.write(header[3]);
+  SerialUSB.write(header[4]);
+  SerialUSB.write(header[5]);
+  SerialUSB.write(header[6]);
 
   // Send the payload with the floats first
   for (int i = 0; i < outPayload.sz() * 4; i++) {
     _temp = outPayload.getByte(i);
-    bt.write(_temp);
+    // bt.write(_temp);
+    SerialUSB.write(_temp);
+
     chksum += _temp;
   }
 
   // Send Checksum
-  bt.write(chksum);
-  bt.flush();
+  // bt.write(chksum);
+  SerialUSB.write(chksum);
+
+  // bt.flush();
 }
 
 void sendControlParameters(byte ctype) {
@@ -470,19 +525,31 @@ void sendControlParameters(byte ctype) {
   chksum += header[2] + header[3] + header[4] + header[4];
 
   // Send header
-  bt.write(header[0]);
-  bt.write(header[1]);
-  bt.write(header[2]);
-  bt.write(header[3]);
-  bt.write(header[4]);
-  bt.write(header[5]);
+  // bt.write(header[0]);
+  // bt.write(header[1]);
+  // bt.write(header[2]);
+  // bt.write(header[3]);
+  // bt.write(header[4]);
+  // bt.write(header[5]);
+
+  SerialUSB.write(header[0]);
+  SerialUSB.write(header[1]);
+  SerialUSB.write(header[2]);
+  SerialUSB.write(header[3]);
+  SerialUSB.write(header[4]);
+  SerialUSB.write(header[5]);
+
   // Send payload
   for (int i = 0; i < outPayload.sz() * 4; i++) {
     _temp = outPayload.getByte(i);
-    bt.write(_temp);
+    // bt.write(_temp);
+    SerialUSB.write(_temp);
+
     chksum += _temp;
   }
-  bt.write(chksum);
+  // bt.write(chksum);
+  SerialUSB.write(chksum);
+
 }
 
 

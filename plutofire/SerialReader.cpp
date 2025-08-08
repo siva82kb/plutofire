@@ -9,15 +9,15 @@
 #include "Arduino.h"
 #include "SerialReader.h"
 #include"SoftwareSerial.h"
-SoftwareSerial bt1(0, 1);
+// SoftwareSerial bt1(0, 1);
 SerialReader::SerialReader() {
   _state = WAITFORPACKET;
 }
 
 int SerialReader::readUpdate() {
-    while (bt1.available() > 0) {
+    while (SerialUSB.available() > 0) {
         // Read current byte
-        _currByte = bt1.read();
+        _currByte = SerialUSB.read();
         switch (_state) {
             case WAITFORPACKET:
                 if (_currByte == 0xAA) {

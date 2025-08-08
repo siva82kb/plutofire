@@ -13,7 +13,7 @@
 void setup() {
   // Basic device setup
   Serial.begin(115200);
-  bt.begin(115200);
+  // bt.begin(115200);
   analogReadResolution(12);
   analogWriteResolution(PWMRESOLN);
   analogWriteFrequency(4, 2000);
@@ -53,6 +53,7 @@ void setup() {
 
   // Initialize variable.
   streamType = SENSORSTREAM;
+
   stream = true;
   ctrlType = NONE;
   calib = NOCALIB;
@@ -81,6 +82,7 @@ void loop() {
   // Send sensordata
   if (stream) {
     writeSensorStream();
+    
   }
 
   // Update control
