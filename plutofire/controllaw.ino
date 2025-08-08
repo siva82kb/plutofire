@@ -17,7 +17,7 @@ void setControlType(byte ctype) {
     // Set control direction.
     ctrlDir = 0;
     // Set the target depending on the control mode.
-    if (ctrlType == TORQUE) {
+    if (ctrlType == TORQUE || ctrlType == TORQUELINEAR) {
       target = 0.0;
     } else {
       target = INVALID_TARGET;
@@ -96,8 +96,14 @@ void updateControlLaw() {
       // desired.add(target);
       desired.add(getAANDesiredTrajectory());
       // Feedfoward torque control.
-      _currI = desired.val(0) / MECHANICAL_CONST;
-      _currPWM = convertCurrentToPWM(_currI);
+      _currPWM = torque_to_pwm(desired.val(0));
+      break;
+    case TORQUELINEAR:
+      // Update desired position
+      // desired.add(target);
+      desired.add(getLinearDesiredTrajectory());
+      // Feedfoward torque control.
+      _currPWM = torque_to_pwm(desired.val(0));
       break;
     case RESIST:
       // PD resistance control
@@ -366,6 +372,11 @@ void sendPWMToMotor(float pwm) {
     analogWrite(PWM, min(MAXPWM, max(-pwm, MINPWM)));
     // return -min(MAXPWM, max(-pwm, MINPWM));
   }
+}
+
+float torque_to_pwm(float torq) {
+  if (torq >= 0) return TORQ2PWM * torq + MINPWM;
+  return TORQ2PWM * torq - MINPWM;
 }
 
 void setControlParamForMech() {

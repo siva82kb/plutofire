@@ -29,6 +29,7 @@
 #define POSITIONAAN         0x04
 #define POSITIONLINEAR      0x05
 #define OBJECTSIM           0x06
+#define TORQUELINEAR        0x07
 
 // Mechanisms
 #define NOMECH              0x00
@@ -112,6 +113,7 @@
 
 // Motor constants
 #define MECHANICAL_CONST    0.231 //for 48v 0.231; // for 24V 0.077;
+#define TORQ2PWM            3228
 #define MAX_CURRENT         8
 
 // Heart beat related variable

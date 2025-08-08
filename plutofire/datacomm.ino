@@ -65,7 +65,8 @@ void readHandleIncomingMessage() {
         // Check if the current control type is POSITION or TORQUE.
         if ((ctrlType == POSITION)
             || (ctrlType == POSITIONLINEAR)
-            || (ctrlType == TORQUE)) {
+            || (ctrlType == TORQUE)
+            || (ctrlType == TORQUELINEAR)) {
           // Set target.
           setTarget(serReader.payload, 1, ctrlType);
           // Initial time.
