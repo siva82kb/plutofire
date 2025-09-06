@@ -82,7 +82,6 @@ void loop() {
   // Send sensordata
   if (stream) {
     writeSensorStream();
-    
   }
 
   // Update control

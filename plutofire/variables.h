@@ -149,8 +149,8 @@ const float mechRangeValue[] = {
 byte isActuated;
 
 // Version and device ID.
-const char* fwVersion = "25.05";
-const char* deviceId  = "PLUTO-FullAssess-MHCP";
+const char* fwVersion = "25.09";
+const char* deviceId  = "PLUTO-FullAssess-MHCP-USB";
 const char* compileDate = __DATE__ " " __TIME__;
 
 // Last received heartbeat time.

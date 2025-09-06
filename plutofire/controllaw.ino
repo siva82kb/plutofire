@@ -39,24 +39,11 @@ void setControlType(byte ctype) {
 }
 
 void updateControlLaw() {
-  // float _currPWM = 0.0;
-  // float _currError = 0.0;
   float _currI = 0.0;
   float _currPWM = 0.0;
   float _prevPWM = control.val(0);
   bool _motorEnabled = true;
   float _alpha;
-  // float ffCurr = 0.0;
-  // float ffPWM = 0.0;
-  // float _delPWMSign;
-  // If control is NONE. Switch off control and move on.
-  // if (ctrlType == NONE) {
-  //   // Switch off controller.
-  //   digitalWrite(ENABLE, LOW);
-  //   control.add(0.0);
-  //   return;
-  // }
-  // Else we need to take the appropriate action.
   switch (ctrlType) {
     case NONE:
       // Check control can be disabled.
@@ -106,11 +93,6 @@ void updateControlLaw() {
       _currPWM = torque_to_pwm(desired.val(0));
       break;
     case RESIST:
-      // PD resistance control
-      // desTorq = -(kp * (_ang - neutral_ang) + kd * 0.02 * _ang - kd * 0.02 * prev_ang);
-      // cur = desTorq / mechnicalConstant;
-      // __currpwm = constrain(map(abs(cur), 0, maxCurrent, 0.1 * 255, 0.9 * 255), -229, 229);
-      // prev_ang = _ang;
       break;
     case OBJECTSIM:
       // Object simulator.
@@ -139,50 +121,6 @@ void updateControlLaw() {
 
 // Position controller
 float controlPosition() {
-  // float _currang = ang.val(0);
-  // float _currtgt = desired.val(0);
-  // float _prevang = ang.val(1);
-  // float _prevtgt = desired.val(1);
-  // float _currp, _currd, _curri;
-  // float _currerr, _preverr;
-  // float _errsum = errsum.val(0);
-  // float _cgain = (MAX_CTRL_GAIN - 1) * (1.0 * ctrlGain / 255) + 1;
-
-  // // Check if position control is disabled, or we should have valid 
-  // // current and previous desired positions. 
-  // if ((_currtgt == INVALID_TARGET) || (_prevtgt == INVALID_TARGET)) {
-  //   err.add(0.0);
-  //   errdiff.add(0.0);
-  //   errsum.add(0.0);
-  //   return 0.0;
-  // }
-
-  // // Update error related information.
-  // // Current error
-  // _currerr = _currtgt - _currang;
-  // // Ignore small errors.
-  // _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? 0.0 : _currerr;
-  // // Proportional control term.
-  // _currp = _cgain * pcKp * (_currerr);
-
-  // // Previous error
-  // _preverr = (_prevtgt != INVALID_TARGET) ? _prevtgt - _prevang : _currerr;
-  // // Derivate control term.
-  // _currd = _cgain * pcKd * (_currerr - _preverr);
-
-  // // Error sum.
-  // _errsum = 0.9999 * _errsum + _currerr;
-  // float _intlim = ctrlBound * INTEGRATOR_LIMIT / pcKi;
-  // _errsum = min(_intlim, max(-_intlim, _errsum));
-  // // Integral control term.
-  // _curri = _cgain * pcKi * _errsum;
-
-  // // Log error information
-  // err.add(_currp);
-  // errdiff.add(_currd);
-  // errsum.add(_curri);
-
-  // return _currp + _currd + _curri;
   float _currang = ang.val(0);
   float _currtgt = desired.val(0);
   float _prevang = ang.val(1);
@@ -232,52 +170,6 @@ float controlPosition() {
 
   return _currp + _currd + _curri;
 }
-
-// // Position controller for AAN implementation
-// float controlPositionAAN() {
-//   float _currang = ang.val(0);
-//   float _currtgt = target.val(0);
-//   float _prevang = ang.val(1);
-//   float _prevtgt = target.val(1);
-//   float _currp, _currd, _curri;
-//   float _currerr, _preverr;
-//   float _errsum = errsum.val(0);
-
-//   // Check if position control is disabled.
-//   if (_currtgt == INVALID_TARGET) {
-//     err.add(0.0);
-//     errdiff.add(0.0);
-//     errsum.add(0.0);
-//     return 0.0;
-//   }
-
-//   // Update error related information.
-//   // Current error
-//   _currerr = _currtgt - _currang;
-//   // Ignore small errors.
-//   _currerr = (abs((_currerr)) <= POS_CTRL_DBAND) ? 0.0 : _currerr;
-//   // Proportional control term.
-//   _currp = (ctrlDir * _currerr >= 0) ? pcKp * (_currerr) : 0.0;
-
-//   // Previous error
-//   _preverr = (_prevtgt != INVALID_TARGET) ? _prevtgt - _prevang : _currerr;
-//   // Derivate control term.
-//   _currd = (ctrlDir * _currerr >= 0) ? pcKd * (_currerr - _preverr) : 0.0;
-
-//   // Error sum.
-//   _errsum = 0.9999 * _errsum + _currerr;
-//   float _intlim = ctrlBound * INTEGRATOR_LIMIT / pcKi;
-//   _errsum = min(_intlim, max(-_intlim, _errsum));
-//   // Integral control term.
-//   _curri = pcKi * _errsum;
-
-//   // Log error information
-//   err.add(_currp);
-//   errdiff.add(_currd);
-//   errsum.add(_curri);
-
-//   return _currp + _currd + _curri;
-// }
 
 // Position controller for AAN implementation
 float controlPositionAAN() {

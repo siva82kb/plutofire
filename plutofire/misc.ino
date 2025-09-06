@@ -1,4 +1,7 @@
-
+/* Miscellaneous function to handle various tasks.
+ *
+ * Author: Sivakumar Balasubramanian
+ * /
 
 /*
  * Check if there is heartbeat.
@@ -20,11 +23,6 @@ void checkHeartbeat() {
  */
 void handleErrors() {
   if (deviceError.num != 0) {
-    // #if SERIALUSB_DEBUG
-    //   SerialUSB.print("Error occured: ");
-    //   SerialUSB.print(deviceError.num);
-    //   SerialUSB.print("\n");
-    // #endif
     setControlType(NONE);
   }
 }
@@ -51,7 +49,7 @@ float readEncoderAngle() {
 /*
  * Function to handle setting of the limb-mechanism scale
  */
-void setLimmbMechScale() {
+void setLimbMechScale() {
   // Set limb-mech scale.
   if (currLimb == NOLIMB) {
     limbMechAngleScale = 1.0;
@@ -76,14 +74,6 @@ void setLimmbMechScale() {
   #endif
 }
 
-// float convertForLimb() {
-//   // No limb set.
-//   if (currLimb != LEFT) return 1.0;
-//   // Left limb has to be dealt with different depending on the mechanism.
-//   return currMech == HOC ? 1.0 : -1.0;
-// }
-
-
 /*
  * Read the status of the PLUTO button.
  */
@@ -92,12 +82,6 @@ void readPlutoButtonState(void) {
   plutoButton = bounce.read();
   if (bounce.changed()) {
     int deboucedInput = bounce.read();
-    if (deboucedInput == LOW) {
-      //   led.setColor(RGBLed::RED);
-      //   plutoButton = 1;
-      //   ledState = !ledState;             // SET ledState TO THE OPPOSITE OF ledState
-      //   digitalWrite(LED_PIN, ledState);  // WRITE THE NEW ledState
-    }
   }
 }
 
@@ -109,24 +93,11 @@ void updateSensorData(void) {
   // Read the motor encoder
   ang.add(readEncoderAngle());
 
-  // Estimated torque from the motor current
-  //   torque_est = (analogRead(MOTORCURR) * MCURRGAIN - maxCurrent) * mechnicalConstant;
-
   // Read the PLUTO button state
   readPlutoButtonState();
 }
 
-void _displaySerialUSB() {
-  // put your main code here, to run repeatedly:
-  Serial.print(ang.val(0));
-  //   Serial.print(" ");
-  //   Serial.print(angvel.val(0));
-  //   Serial.print(" ");
-  //   Serial.print(mcurr.val(0));
-  //   Serial.print(" ");
-  //   Serial.print(torque.val(0));
-  Serial.print("\n");
-}
+void _displaySerialUSB() { }
 
 byte getProgramStatus(byte dtype) {
   // X | DATA TYPE | DATA TYPE | DATA TYPE | CONTROL TYPE | CONTROL TYPE | CONTROL TYPE | CALIB
@@ -137,63 +108,6 @@ byte getMechActType(void) {
   // CURR MECH | CURR MECH | CURR MECH | CURR MECH | CURR LIMB | CURR LIMB | X | IS ACTUATED
   return ((currMech << 4) | (currLimb << 2) | isActuated);
 }
-
-// // Update sensor parameter using  byte array
-// void updateSensorParameter(int sz, int strtInx, byte* payload) {
-//   int inx = strtInx;
-//   floatunion_t temp;
-//   // Torque sensor.
-//   _assignFloatUnionBytes(inx, payload, &temp);
-//   torqParam.m = temp.num;
-//   inx += 4;
-//   _assignFloatUnionBytes(inx, payload, &temp);
-//   torqParam.c = temp.num;
-//   inx += 4;
-// }
-// // Update sensor parameter using  byte array
-// void updateResistanceControlInfo(int sz, int strtInx, byte* payload) {
-//   int inx = strtInx;
-//   floatunion_t temp;
-//   // Torque sensor.
-//   _assignFloatUnionBytes(inx, payload, &temp);
-//   kp = temp.num;
-//   inx += 4;
-//   _assignFloatUnionBytes(inx, payload, &temp);
-//   kd = temp.num;
-//   inx += 4;
-//   _assignFloatUnionBytes(inx, payload, &temp);
-//   km = temp.num;
-//   inx += 4;
-//   _assignFloatUnionBytes(inx, payload, &temp);
-//   neutral_ang = temp.num;
-//   inx += 4;
-// }
-
-
-// // Update sensor param in the different buffers
-// void updateBufferSensorParam(bool reset) {
-//   if (reset == true) {
-//     torqParam.m = 1.0;
-//     torqParam.c = 0.0;
-//   }
-//   setTorqSensorParam();
-// }
-
-// // Update sensor parameters for torque sensor
-// void setTorqSensorParam() {
-//   torque.setconvfac(torqParam.m, torqParam.c);
-// }
-
-// // Update sensor parameters for angular velocity sensor
-// void setAngleVelSensorParam() {
-//   angvel.setconvfac(angvelParam.m, angvelParam.c);
-// }
-
-// // Update sensor parameters for motor current sensor
-// void setMCurrSensorParam() {
-//   mcurr.setconvfac(mcurrParam.m, mcurrParam.c);
-// }
-
 
 // Update the controller parameters
 void setControlParameters(byte ctype, int sz, int strtInx, byte* payload) {
@@ -358,151 +272,4 @@ float generateSmoothDesiredPosition(float x0) {
   return _out;
 }
 
-// // Set torque target
-// void setTorqueTarget(byte* payload, int strtInx) {
-//     int inx = strtInx;
-//     floatunion_t temp;
-//     _assignFloatUnionBytes(inx, payload, &temp);
-//     desTorq = temp.num;
-// }
-
-// void setTargetParameters(byte ctype, int sz, int strtInx, byte* payload) {
-//   int inx = strtInx;
-//   floatunion_t temp;
-//   switch (ctype) {
-//     case POSITION:
-//       // Position target
-//       _assignFloatUnionBytes(inx, payload, &temp);
-//       desAng = temp.num;
-//       break;
-//     case TORQUE:
-//       // Torque control gain
-//       _assignFloatUnionBytes(inx, payload, &temp);
-//       desTorq = temp.num;
-//       break;
-//     case RESIST:
-//       break;
-//   }
-// }
-
-// // Update feedforward torque
-// void setFeedforwardTorque(byte ctype, int sz, int strtInx, byte* payload) {
-//     floatunion_t temp;
-//     _assignFloatUnionBytes(strtInx, payload, &temp);
-//     desTorq = temp.num;
-// }
-
-
-void initSensorParam() {
-  //   torqParam.m = 1.0;
-  //   torqParam.c = 0.0;
-  //   angvelParam.m = 1.0;
-  //   angvelParam.c = 0.0;
-  //   mcurrParam.m = MCURRGAIN;
-  //   mcurrParam.c = MCURROFFSET;
-  //   setTorqSensorParam();
-  //   setAngleVelSensorParam();
-  //   setMCurrSensorParam();
-}
-
-// Check for any errors in the operation
-// void checkForErrors() {
-// error = NOERR;
-// uint16_t _errval = 0;
-
-// // Check sensor values.
-
-
-// if (abs(ang.val(0)) > 120.0) {
-//   _errval = _errval | ANGSENSERR;
-// }
-// //  if (abs(angvel.valf(0, false)) > 500.) {
-// //    _errval = _errval | VELSENSERR;
-// //  }
-// //  if (abs(torque.valf(0, false)) > 4.0) {
-// //    _errval = _errval | TORQSENSERR;
-// //  }
-// //  if (abs(mcurr.valf(0, false)) > 10) {
-// //    _errval = _errval | MCURRSENSERR;
-// //
-
-
-
-// // Update error status
-// if (_errval != 0) {
-//   sendPWMToMotor(0);
-//   error = YESERR;
-// }
-
-// // Update error values
-// errorval[0] = _errval & 0x00FF;
-// errorval[1] = (_errval >> 8) & 0x00FF;
-// }
-
-// void startCalibMode() {
-//     ctrlType = CALIBRATION;
-//     calibCount = 0;
-//     angvelParam.m = 1.0;
-//     angvelParam.c = 0.0;
-//     mcurrParam.m = 1.0;
-//     mcurrParam.c = 0.0;
-//     setAngleVelSensorParam();
-//     setMCurrSensorParam();
-// }
-
-// void updateExitCalibMode() {
-//   // Reset encoder count
-
-//   // Update gains for vel. and curr sensors
-//   angvelParam.m = ANGVELGAIN;
-//   angvelParam.c = 0;
-//   mcurrParam.m = MCURRGAIN;
-//   mcurrParam.c = MCURROFFSET;
-//   setAngleVelSensorParam();
-//   setMCurrSensorParam();
-
-//   // Exit calibration mode.
-//   ctrlType = NONE;
-// }
-
-
-
-// void calibProcess() {
-//     // Check counter
-//     ctrlType = NONE;
-//     // Set the encoder offset count value.
-//     encOffsetCount = plutoEncoder.read();
-//     initSensorParam();
-//     if (calibCount++ == maxCalibCount) {
-//         // Calibration count done.
-//         // Update parameters and exit calibration mode.
-//         updateExitCalibMode();
-//         // Update calibration.
-//         calib = YESCALIB;
-//     } else {
-//         writeSensorStream();
-//     }
-// }
-
-//void handleError() {
-//  // First clear any control mode.
-//  ctrlType = NONE;
-//
-//  if (stream) {
-//    writeSensorStream();
-//  }
-//}
-//
-//void handleNormal() {
-//  if (stream) {
-//    writeSensorStream();
-//  }
-//  // Update control law.
-//  if (ctrlType != NONE) {
-//    updateControlLaw();
-//  } else {
-//      digitalWrite(ENABLE, HIGH);
-//      digitalWrite(CW, LOW);
-//      analogWrite(PWM, 10);
-//  }
-//}
+void initSensorParam() { }
