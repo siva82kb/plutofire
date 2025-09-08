@@ -58,8 +58,13 @@ void setLimbMechScale() {
     limbMechAngleScale = 1.0;
     limbMechControlScale = currMech == FPS ? -1.0 : 1.0; // ODD: MHCP strange stuff
   } else if (currLimb == LEFT) {
-    limbMechAngleScale = currMech == HOC ? 1.0 : -1.0;
-    limbMechControlScale = currMech == WFE ? -1.0 : 1.0; // ODD: MHCP strange
+    if (currMech == HOC) {
+      limbMechAngleScale = 1.0;
+      limbMechControlScale = 1.0;
+    } else {
+      limbMechAngleScale = -1.0;
+      limbMechControlScale = currMech == FPS ? 1.0 : -1.0; // ODD: MHCP strange stuff
+    }
   }
   #if SERIALUSB_DEBUG
     SerialUSB.print("Scales: ");
@@ -80,9 +85,6 @@ void setLimbMechScale() {
 void readPlutoButtonState(void) {
   bounce.update();
   plutoButton = bounce.read();
-  if (bounce.changed()) {
-    int deboucedInput = bounce.read();
-  }
 }
 
 /*

@@ -45,7 +45,7 @@ void setup() {
   currMech = NOMECH;
 
   // Set Limb-Mech Scale
-  setLimmbMechScale();
+  setLimbMechScale();
 
   // Set targets to invalid value 999.
   target = INVALID_TARGET;
