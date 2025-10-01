@@ -36,10 +36,11 @@ void _assignFloatUnionBytes(int inx, byte* bytes, floatunion_t* temp) {
 float readEncoderAngle() {
   long newPosition = plutoEncoder.read() - encOffsetCount;
   if (isActuated) {
-    return (360.0 * newPosition / (enPPRActuated * 4)) - mechOffsetValue[currMech];
+    return (360.0 * newPosition / (enPPRActuated * 4)) - mechOffsetValue[currMech] + angleCorrection;
   }
   return ((360.0 * newPosition / (enPPRnonActuated)));
 }
+
 
 
 /*

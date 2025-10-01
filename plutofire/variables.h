@@ -37,7 +37,7 @@
 
 // In data type
 #define GET_VERSION         0x00
-#define CALIBRATE           0x01
+#define CALIBRATE_START     0x01
 #define START_STREAM        0x02
 #define STOP_STREAM         0x03
 #define SET_CONTROL_TYPE    0x04
@@ -49,6 +49,7 @@
 #define SET_AAN_TARGET      0x0A
 #define RESET_AAN_TARGET    0x0B
 #define SET_CONTROL_GAIN    0x0C
+#define CALIBRATE_END       0x0D
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -109,8 +110,8 @@ const float mechOffsetValue[] = {
   68,   // Wrist Ulnar/Radial Deviation
   90,   // Forearm Prono/Sunpination
   0,    // Hand Opening/Closing
-  0,    // Functional mechanism 1
-  0,    // Functional mechanism 2
+  90,    // Functional mechanism 1
+  90,    // Functional mechanism 2
 };
 const float mechRangeValue[] = { 
   0,     // Dummy. No mechanism 
@@ -118,8 +119,8 @@ const float mechRangeValue[] = {
   136,   // Wrist Ulnar/Radial Deviation
   180,   // Forearm Prono/Sunpination
   0,    // Hand Opening/Closing
-  0,    // Functional mechanism 1
-  0,    // Functional mechanism 2
+  180,    // Functional mechanism 1
+  180,    // Functional mechanism 2
 };
 
 // Actuated device?
@@ -137,6 +138,9 @@ float lastRxdHeartbeat = 0.0f;
 int encOffsetCount = 0;
 int enPPRActuated = 6400;   //6400 for new motor 4096 for old motor
 int enPPRnonActuated = 4096 ;
+
+bool isCalibrating = false;
+float angleCorrection = 0;        // Delta angle to correct for any deviation in angle range.
 
 // Sensor data buffers
 Buffer ang;
