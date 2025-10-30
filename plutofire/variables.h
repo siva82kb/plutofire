@@ -90,6 +90,12 @@
 #define PWM                 4//19
 #define ENABLE              5//20//36//40//51 brown
 
+//LED PINS
+#define RED_PIN             19 // red color
+#define BLUE_PIN            18 // blue
+#define GREEN_PIN           20 // green
+
+
 // Motor constants
 #define MECHANICAL_CONST    0.231 //for 48v 0.231; // for 24V 0.077;
 #define MAX_CURRENT         8
@@ -161,6 +167,10 @@ Buffer errsum;
 volatile byte plutoButton = 1;
 bool ledState = 1;
 
+//led
+static int* lastColor = nullptr;
+int* newColor;
+
 // Packet Counter.
 uint16union_t packetNumber;
 
@@ -228,5 +238,5 @@ Bounce bounce = Bounce();
 IntervalTimer readStream;
 
 SoftwareSerial bt(0, 1);
-RGBLed led(19, 18, 20, RGBLed::COMMON_CATHODE);
+RGBLed led(19, 20, 18, RGBLed::COMMON_CATHODE);
 Encoder plutoEncoder(PIN_A, PIN_B);

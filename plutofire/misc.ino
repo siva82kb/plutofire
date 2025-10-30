@@ -24,7 +24,18 @@ void handleErrors() {
   }
 }
 
+//Handle LED
+void handleLED(){
+  if (deviceError.num & NOHEARTBEAT) newColor = RGBLed::RED;
+  else if(deviceError.num == 0) newColor = RGBLed::GREEN;
+  else newColor = RGBLed::YELLOW;
+  
 
+  if (newColor != lastColor) {
+      led.setColor(newColor);
+      lastColor = newColor;
+  }
+}
 void _assignFloatUnionBytes(int inx, byte* bytes, floatunion_t* temp) {
   temp->bytes[0] = bytes[inx];
   temp->bytes[1] = bytes[inx + 1];

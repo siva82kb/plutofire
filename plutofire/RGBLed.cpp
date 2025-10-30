@@ -13,7 +13,7 @@ int RGBLed::WHITE[3] = {255, 255, 255};
 bool RGBLed::COMMON_ANODE = true;
 bool RGBLed::COMMON_CATHODE = false;
 
-RGBLed::RGBLed(int red, int green, int blue, bool common) : _red(red), _green(green), _blue(blue), _common(common), _brightness(100)
+RGBLed::RGBLed(int red, int green, int blue, bool common) : _red(red),  _green(green), _blue(blue), _common(common), _brightness(100)
 {
 #if defined(ESP32)
 	ledcSetup(0, 5000, 8);
@@ -146,7 +146,12 @@ void RGBLed::color(int red, int green, int blue)
 		ledcWrite(2, 255 - blue);
 #else
 		analogWrite(_red, 255 - red);
-		analogWrite(_green, 255 - green);
+		// analogWrite(_green, 255 - green);
+    if (green > 127)
+      digitalWrite(_green, HIGH);
+    else
+      digitalWrite(_green, LOW);
+
 		analogWrite(_blue, 255 - blue);
 #endif
 	}
@@ -158,7 +163,12 @@ void RGBLed::color(int red, int green, int blue)
 		ledcWrite(2, blue);
 #else
 		analogWrite(_red, red);
-		analogWrite(_green, green);
+		// analogWrite(_green, green);
+    if (green > 127)
+      digitalWrite(_green, HIGH);
+    else
+      digitalWrite(_green, LOW);
+
 		analogWrite(_blue, blue);
 #endif
 	}
