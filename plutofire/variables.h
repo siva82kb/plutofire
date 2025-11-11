@@ -133,8 +133,8 @@ const float mechRangeValue[] = {
 byte isActuated;
 
 // Version and device ID.
-const char* fwVersion = "25.03";
-const char* deviceId  = "PLUTO250130";
+const char* fwVersion = "h1.0.0";
+const char* deviceId  = "HOMER-PLUTO-01";
 const char* compileDate = __DATE__ " " __TIME__;
 
 // Last received heartbeat time.
