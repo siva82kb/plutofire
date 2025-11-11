@@ -30,6 +30,10 @@ void setup() {
 
   // LED setup
   pinMode(LED_PIN, OUTPUT);
+  pinMode(RED_PIN, OUTPUT);
+  pinMode(GREEN_PIN, OUTPUT);
+  pinMode(BLUE_PIN, OUTPUT);
+
 
   /* Read incoming packets on an interval timer.
      * Reads incoming data every 1000usec. */
@@ -71,6 +75,9 @@ void loop() {
 
   // Handle errors.
   handleErrors();
+
+  // Handle LED
+  handleLED();
 
   // Send sensordata
   if (stream) {

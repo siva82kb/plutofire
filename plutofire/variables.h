@@ -37,7 +37,7 @@
 
 // In data type
 #define GET_VERSION         0x00
-#define CALIBRATE           0x01
+#define CALIBRATE_START     0x01
 #define START_STREAM        0x02
 #define STOP_STREAM         0x03
 #define SET_CONTROL_TYPE    0x04
@@ -49,6 +49,7 @@
 #define SET_AAN_TARGET      0x0A
 #define RESET_AAN_TARGET    0x0B
 #define SET_CONTROL_GAIN    0x0C
+#define CALIBRATE_END       0x0D
 #define HEARTBEAT           0x80
 
 // Control Law Related Definitions
@@ -89,6 +90,12 @@
 #define PWM                 4//19
 #define ENABLE              5//20//36//40//51 brown
 
+//LED PINS
+#define RED_PIN             19 // red color
+#define BLUE_PIN            18 // blue
+#define GREEN_PIN           20 // green
+
+
 // Motor constants
 #define MECHANICAL_CONST    0.231 //for 48v 0.231; // for 24V 0.077;
 #define MAX_CURRENT         8
@@ -109,8 +116,8 @@ const float mechOffsetValue[] = {
   68,   // Wrist Ulnar/Radial Deviation
   90,   // Forearm Prono/Sunpination
   0,    // Hand Opening/Closing
-  0,    // Functional mechanism 1
-  0,    // Functional mechanism 2
+  90,    // Functional mechanism 1
+  90,    // Functional mechanism 2
 };
 const float mechRangeValue[] = { 
   0,     // Dummy. No mechanism 
@@ -118,8 +125,8 @@ const float mechRangeValue[] = {
   136,   // Wrist Ulnar/Radial Deviation
   180,   // Forearm Prono/Sunpination
   0,    // Hand Opening/Closing
-  0,    // Functional mechanism 1
-  0,    // Functional mechanism 2
+  180,    // Functional mechanism 1
+  180,    // Functional mechanism 2
 };
 
 // Actuated device?
@@ -137,6 +144,9 @@ float lastRxdHeartbeat = 0.0f;
 int encOffsetCount = 0;
 int enPPRActuated = 6400;   //6400 for new motor 4096 for old motor
 int enPPRnonActuated = 4096 ;
+
+bool isCalibrating = false;
+float angleCorrection = 0;        // Delta angle to correct for any deviation in angle range.
 
 // Sensor data buffers
 Buffer ang;
@@ -156,6 +166,10 @@ Buffer errsum;
 // Variable to hold the current PLUTO button state.
 volatile byte plutoButton = 1;
 bool ledState = 1;
+
+//led
+static int* lastColor = nullptr;
+int* newColor;
 
 // Packet Counter.
 uint16union_t packetNumber;
@@ -224,5 +238,5 @@ Bounce bounce = Bounce();
 IntervalTimer readStream;
 
 SoftwareSerial bt(0, 1);
-RGBLed led(19, 18, 20, RGBLed::COMMON_CATHODE);
+RGBLed led(19, 20, 18, RGBLed::COMMON_CATHODE);
 Encoder plutoEncoder(PIN_A, PIN_B);

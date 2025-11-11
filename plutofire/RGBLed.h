@@ -7,7 +7,7 @@ class RGBLed
 {
 
 public:
-	RGBLed(int red, int green, int blue, bool common);
+	RGBLed(int red,  int green, int blue, bool common);
 
 	void off();
 

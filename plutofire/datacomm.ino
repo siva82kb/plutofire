@@ -104,7 +104,7 @@ void readHandleIncomingMessage() {
         target = INVALID_TARGET;
         ctrlDir = 0;
         break;
-      case CALIBRATE:
+      case CALIBRATE_START:
         // This can be set only if there is no error.
         if (deviceError.num != 0) break;
         // No Error
@@ -115,8 +115,21 @@ void readHandleIncomingMessage() {
         if (currMech != NOMECH) {
           // Set the encoder offset value
           encOffsetCount = plutoEncoder.read();
-          calib = YESCALIB;
+          angleCorrection = 0;
+          isCalibrating = true;
+          // calibrateEncoder(true);
+          //calib = YESCALIB;
         }
+        break;
+      case CALIBRATE_END:
+        // This can be set only if there is no error.
+        if (deviceError.num != 0 || !isCalibrating || currMech != _details) break;
+
+          // Set the encoder offset value
+          if(currMech != HOC) angleCorrection = (mechOffsetValue[currMech] - ang.val(0)) / 2 ;
+          
+          calib = YESCALIB;
+          isCalibrating = false;
         break;
       case GET_VERSION:
         stream = false;
